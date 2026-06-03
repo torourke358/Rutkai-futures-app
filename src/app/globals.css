@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+:root {
+  /* Dark trading-app theme by default — calm neutrals with one accent. */
+  --background: #0b1220;       /* deep slate */
+  --foreground: #e2e8f0;       /* slate-200 */
+  --surface: #111a2e;          /* slate-900-ish raised cards */
+  --surface-2: #1a2440;        /* slate-800-ish hover / chips */
+  --border: #1e2a44;
+  --accent: #818cf8;           /* indigo-400 — the one accent */
+  --pos: #34d399;              /* emerald-400 — profit */
+  --neg: #f87171;              /* rose-400 — loss */
+
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+html {
+  overscroll-behavior-y: none;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior-y: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+input,
+textarea,
+[contenteditable="true"] {
+  -webkit-user-select: text;
+  user-select: text;
+  /* Min 16px on iOS or the field zooms when focused. */
+  font-size: 16px;
+}
+
+button,
+a,
+[role="button"],
+label,
+select {
+  touch-action: manipulation;
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+@media (display-mode: standalone) {
+  body {
+    overflow-x: hidden;
+  }
+}
