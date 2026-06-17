@@ -9,27 +9,32 @@ This app does NOT place, modify, or recommend trades. Read-only journal.
 
 ## Status
 
-This is the **foundation pass**. What works end-to-end:
+Phase 1 + the TradeZella-depth analytics build are complete. What works
+end-to-end:
 
-- Schema (`01_trade_journal_schema.sql`) — tables, RLS, audit, profile-create trigger
-- FIFO pairing algorithm with unit tests (`src/lib/trades/pairing.ts`)
-- CSV import parser with NT8 defaults (`src/lib/import/CsvImportSource.ts`)
-- Analytics computation (`src/lib/analytics/stats.ts`)
-- Anthropic wrapper + analyst system prompt (`src/lib/claude.ts`)
-- Auth (Supabase SSR, three-client split, proxy refresh)
-- App shell (dark theme, active-tab pill, sign-out)
-- Page placeholders: `/dashboard`, `/trades`, `/import`, `/review`
+- Schema — `01_trade_journal_schema.sql` (core) + `02_trade_journal_phase2.sql`
+  (risk model, cash flows, instrument multipliers, trade annotations)
+- FIFO pairing with futures point multipliers + unit tests (`src/lib/trades/pairing.ts`)
+- CSV import: drag/drop UI, column-mapping (NT8 defaults + remembered),
+  preview, `/api/import` → pair → UPSERT, and undo-by-batch
+  (`src/components/ImportWizard.tsx`, `src/lib/trades/repair.ts`)
+- Manual trade entry (writes executions → re-pairs)
+- Risk model: three user-selectable methods (flat $, % of static balance,
+  % of auto-tracked equity); only `R = net P&L ÷ risk` is hardwired
+  (`src/lib/risk.ts`, `/account/settings`)
+- Analytics: expectancy ($ and R), profit factor, payoff, drawdown curve,
+  streaks, R-distribution, and win-rate/expectancy/avg-R sliced by
+  setup / instrument / day-of-week / hour (`src/lib/analytics/stats.ts`)
+- Dashboard: recharts equity + drawdown curves, R histogram, P&L calendar
+  heatmap, breakdown panels, global filters (date/symbol/setup/direction)
+- Trades: dense sortable/filterable table, inline notes, trade detail page with
+  setup/tags/rating/notes/risk-override editing
+- AI review: `/api/ask` summarizes history server-side and calls Claude
+  (`claude-opus-4-8`), chat panel with suggested questions
+- PWA (manifest, SVG icons, conservative service worker) + admin audit viewer
+- Auth (Supabase SSR, three-client split, proxy refresh), dark app shell
 
-What's NOT yet built (next passes):
-
-- CSV upload UI + column-mapping flow + preview + undo-by-batch
-- Pairing pipeline wired to the import flow + UPSERT into `trades`
-- Manual trade entry form
-- Dashboard charts: recharts equity curve + P&L calendar heatmap + breakdowns
-- Trade list dense / sortable / inline-notes + trade detail page
-- `/api/ask` route + chat panel for AI review
-- PWA service worker + icons
-- Audit log viewer for admin
+Run `npm test` (pairing + risk + analytics) and `npm run build` to verify.
 
 ## Set up
 
@@ -38,14 +43,15 @@ What's NOT yet built (next passes):
 npm install
 
 # 2. Create a NEW Supabase project (separate from yacht-ops + petty-cash).
-#    Run 01_trade_journal_schema.sql in the SQL Editor.
+#    Run 01_trade_journal_schema.sql, then 02_trade_journal_phase2.sql,
+#    in the SQL Editor.
 
 # 3. Copy .env.example → .env.local and fill in:
 #    - NEXT_PUBLIC_SUPABASE_URL
 #    - NEXT_PUBLIC_SUPABASE_ANON_KEY
 #    - SUPABASE_SERVICE_ROLE_KEY  (server only — never commit)
 #    - ANTHROPIC_API_KEY          (server only — never commit)
-#    - CLAUDE_MODEL=claude-opus-4-7
+#    - CLAUDE_MODEL=claude-opus-4-8
 
 # 4. Provision the first user via Supabase Auth dashboard (no public signup).
 #    Sign-in form is at /login.

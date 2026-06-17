@@ -2,13 +2,13 @@ import Anthropic from "@anthropic-ai/sdk";
 import { cleanEnv } from "@/lib/supabase/env";
 
 // Server-only Anthropic client wrapper. The model is env-swappable so we
-// can move from claude-opus-4-7 to a newer version without code changes.
+// can move to a newer version without code changes.
 export function getAnthropic(): Anthropic {
   return new Anthropic({ apiKey: cleanEnv(process.env.ANTHROPIC_API_KEY) });
 }
 
 export const CLAUDE_MODEL: string =
-  cleanEnv(process.env.CLAUDE_MODEL) || "claude-opus-4-7";
+  cleanEnv(process.env.CLAUDE_MODEL) || "claude-opus-4-8";
 
 // System prompt for the trade-journal analyst. Hard guardrails on advice
 // and prediction — this is a *historical analysis* tool only.

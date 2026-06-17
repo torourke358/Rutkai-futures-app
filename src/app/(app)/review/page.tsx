@@ -1,23 +1,39 @@
+import { createClient } from "@/lib/supabase/server";
+import ReviewChat from "@/components/ReviewChat";
+
 export const dynamic = "force-dynamic";
 
-export default function ReviewPage() {
+interface QARow {
+  question: string;
+  answer: string | null;
+}
+
+export default async function ReviewPage() {
+  const supabase = await createClient();
+  const { data: recent } = await supabase
+    .from("ai_questions")
+    .select("question, answer")
+    .order("created_at", { ascending: false })
+    .limit(20)
+    .returns<QARow[]>();
+
+  // Oldest first so the conversation reads top-to-bottom.
+  const initial = (recent ?? []).reverse().map((r) => ({
+    question: r.question,
+    answer: r.answer,
+  }));
+
   return (
     <div className="space-y-4 pb-8">
-      <h1 className="text-lg font-semibold text-slate-100">AI Review</h1>
-      <div className="rounded-2xl bg-[var(--surface)] p-6 ring-1 ring-[var(--border)] space-y-3">
-        <p className="text-sm text-slate-300">
-          Ask plain-English questions about your trading history. The chat
-          panel + suggested-question chips ship in the next build pass.
-        </p>
-        <p className="text-xs text-slate-500">
-          Backend (<code className="rounded bg-[var(--surface-2)] px-1 text-xs">/api/ask</code>{" "}
-          server route + Anthropic wrapper) is already plumbed in{" "}
-          <code className="rounded bg-[var(--surface-2)] px-1 text-xs">
-            src/lib/claude.ts
-          </code>
-          .
+      <div>
+        <h1 className="text-lg font-semibold text-slate-100">AI Review</h1>
+        <p className="mt-1 text-xs text-slate-400">
+          Ask plain-English questions about your trading history. Answers come
+          only from your own closed-trade data — this tool never predicts or
+          recommends trades.
         </p>
       </div>
+      <ReviewChat initial={initial} />
     </div>
   );
 }

@@ -34,6 +34,8 @@ export interface PairedTrade {
   fees: number;
   realized_pnl: number | null;
   status: "open" | "closed";
+  // Dollars per 1.00 point used to scale realized P&L (futures multiplier).
+  point_value: number;
 }
 
 // A still-open entry execution with remaining un-matched quantity. The
@@ -47,7 +49,14 @@ interface OpenLot {
 
 const EPS = 1e-9;
 
-export function pairTrades(executions: Execution[]): PairedTrade[] {
+// `multipliers` maps an exact execution symbol → dollars per 1.00 point of
+// price (futures point value). Missing/omitted → 1× (P&L stays in price units).
+// Realized P&L is scaled by the multiplier; fees are already in dollars and
+// are NOT scaled.
+export function pairTrades(
+  executions: Execution[],
+  multipliers?: Map<string, number>,
+): PairedTrade[] {
   const bySymbol = new Map<string, Execution[]>();
   for (const e of executions) {
     const arr = bySymbol.get(e.symbol) ?? [];
@@ -58,6 +67,7 @@ export function pairTrades(executions: Execution[]): PairedTrade[] {
   const trades: PairedTrade[] = [];
 
   for (const [symbol, execs] of bySymbol) {
+    const pointValue = multipliers?.get(symbol) ?? 1;
     execs.sort((a, b) => {
       if (a.executed_at !== b.executed_at) return a.executed_at < b.executed_at ? -1 : 1;
       // Stable secondary by id so the same input always sorts the same way.
@@ -101,7 +111,7 @@ export function pairTrades(executions: Execution[]): PairedTrade[] {
         const exitFeePortion = feeRemaining * (matchQty / exec.quantity);
 
         const dirMul = openSide === "long" ? 1 : -1;
-        const grossPnl = (exec.price - lot.exec.price) * matchQty * dirMul;
+        const grossPnl = (exec.price - lot.exec.price) * matchQty * dirMul * pointValue;
         const pnl = grossPnl - entryFeePortion - exitFeePortion;
 
         trades.push({
@@ -115,6 +125,7 @@ export function pairTrades(executions: Execution[]): PairedTrade[] {
           fees: round6(entryFeePortion + exitFeePortion),
           realized_pnl: round6(pnl),
           status: "closed",
+          point_value: pointValue,
         });
 
         lot.remainingQty -= matchQty;
@@ -152,6 +163,7 @@ export function pairTrades(executions: Execution[]): PairedTrade[] {
         fees: round6(fees),
         realized_pnl: null,
         status: "open",
+        point_value: pointValue,
       });
     }
   }

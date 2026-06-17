@@ -29,6 +29,36 @@ export function pnlToneClass(n: number | null | undefined): string {
   return "text-slate-400";
 }
 
+const COMPACT_FMT = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  notation: "compact",
+  maximumFractionDigits: 1,
+});
+
+// Compact currency for chart axes / dense cells: $1.2K, -$3.4K.
+export function formatCompactUsd(n: number | null | undefined): string {
+  if (n == null) return "—";
+  return COMPACT_FMT.format(n);
+}
+
+// Whole-percent from a 0..1 ratio.
+export function formatPct(ratio: number | null | undefined): string {
+  if (ratio == null) return "—";
+  return `${Math.round(ratio * 100)}%`;
+}
+
+// Human duration from milliseconds: "2h 5m", "45m", "30s".
+export function formatDuration(ms: number | null | undefined): string {
+  if (ms == null || ms <= 0) return "—";
+  const totalMin = Math.round(ms / 60000);
+  if (totalMin < 1) return `${Math.round(ms / 1000)}s`;
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  if (h === 0) return `${m}m`;
+  return `${h}h ${m}m`;
+}
+
 export function todayLocal(): string {
   const d = new Date();
   const yyyy = d.getFullYear();

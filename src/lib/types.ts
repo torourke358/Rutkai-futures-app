@@ -37,6 +37,14 @@ export interface TradeRow {
   status: "open" | "closed";
   setup_tag: string | null;
   notes: string | null;
+  // Per-trade dollar risk override. When set, wins over the risk-model
+  // baseline for R-multiple. Null → use the user's risk_settings method.
+  risk_amount: number | null;
+  // Dollars per 1.00 point of price, snapshotted at pairing time so realized
+  // P&L and re-pairing stay reproducible. 1 for unmultiplied instruments.
+  point_value: number;
+  rating: number | null;
+  tags: string[] | null;
   created_at: string;
   updated_at: string;
 }

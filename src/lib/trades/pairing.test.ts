@@ -134,3 +134,31 @@ test("out-of-order timestamps are normalized before pairing", () => {
 test("empty input → empty output", () => {
   assert.deepEqual(pairTrades([]), []);
 });
+
+test("point multiplier scales realized P&L but not fees", () => {
+  const mult = new Map([["ES", 50]]);
+  const trades = pairTrades(
+    [
+      ex("1", "ES", "buy", 1, 5000, "2026-01-01T09:00:00Z", 2),
+      ex("2", "ES", "sell", 1, 5004, "2026-01-01T10:00:00Z", 2),
+    ],
+    mult,
+  );
+  assert.equal(trades.length, 1);
+  assert.equal(trades[0].point_value, 50);
+  // gross = (5004-5000)*1*50 = 200; fees 2+2=4 (unscaled) → 196
+  assert.equal(trades[0].realized_pnl, 196);
+  assert.equal(trades[0].fees, 4);
+});
+
+test("missing multiplier defaults to 1x", () => {
+  const trades = pairTrades(
+    [
+      ex("1", "ZZ", "buy", 1, 100, "2026-01-01T09:00:00Z"),
+      ex("2", "ZZ", "sell", 1, 110, "2026-01-01T10:00:00Z"),
+    ],
+    new Map([["ES", 50]]),
+  );
+  assert.equal(trades[0].point_value, 1);
+  assert.equal(trades[0].realized_pnl, 10);
+});
