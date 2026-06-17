@@ -17,14 +17,23 @@ create table if not exists user_profiles (
 );
 
 -- Auto-create a profile row whenever a new auth.users row is inserted.
-create or replace function handle_new_user() returns trigger as $$
+-- SECURITY DEFINER with a fixed empty search_path + schema-qualified tables.
+-- Supabase's auth service runs this trigger with a search_path that does not
+-- include `public`; without this it fails with "Database error creating new
+-- user". All object references must therefore be schema-qualified.
+create or replace function handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
 begin
-  insert into user_profiles (id, full_name, role)
+  insert into public.user_profiles (id, full_name, role)
   values (new.id, new.raw_user_meta_data->>'full_name', 'trader')
   on conflict (id) do nothing;
   return new;
 end;
-$$ language plpgsql security definer;
+$$;
 
 drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created

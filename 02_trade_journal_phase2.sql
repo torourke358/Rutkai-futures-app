@@ -103,19 +103,27 @@ alter table trades add column if not exists tags text[];
 -- ---------- profile-create trigger: also seed a risk_settings row ----------
 -- Redefine the new-user handler so every new auth user gets BOTH a profile
 -- and a default (unconfigured) risk_settings row.
-create or replace function handle_new_user() returns trigger as $$
+-- SECURITY DEFINER with a fixed empty search_path + schema-qualified tables
+-- (Supabase's auth service runs this with a search_path that excludes
+-- `public`; unqualified names fail with "Database error creating new user").
+create or replace function handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
 begin
-  insert into user_profiles (id, full_name, role)
+  insert into public.user_profiles (id, full_name, role)
   values (new.id, new.raw_user_meta_data->>'full_name', 'trader')
   on conflict (id) do nothing;
 
-  insert into risk_settings (user_id, method, default_risk_dollars, configured)
+  insert into public.risk_settings (user_id, method, default_risk_dollars, configured)
   values (new.id, 'flat', 200, false)
   on conflict (user_id) do nothing;
 
   return new;
 end;
-$$ language plpgsql security definer;
+$$;
 
 -- Backfill a default risk_settings row for any pre-existing users.
 insert into risk_settings (user_id, method, default_risk_dollars, configured)
