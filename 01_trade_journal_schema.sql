@@ -74,14 +74,12 @@ create table if not exists trades (
   status          text not null default 'open' check (status in ('open','closed')),
   setup_tag       text,
   notes           text,
-  -- Natural key — used to make re-pairing idempotent. Computed once on
-  -- insert; if the same trade re-emerges from pairing we UPSERT on this key.
-  pairing_key     text generated always as (
-    user_id || '|' || symbol || '|' || direction || '|' ||
-    extract(epoch from entry_at)::text || '|' ||
-    coalesce(extract(epoch from exit_at)::text, 'open') || '|' ||
-    quantity::text
-  ) stored,
+  -- Natural key — used to make re-pairing idempotent. If the same trade
+  -- re-emerges from pairing we UPSERT on this key. Maintained by the
+  -- set_trade_pairing_key() trigger below (NOT a generated column: the
+  -- timestamptz expressions are only STABLE, not IMMUTABLE, which a generated
+  -- column rejects with 42P17).
+  pairing_key     text,
   created_at      timestamptz not null default now(),
   updated_at      timestamptz not null default now()
 );
@@ -98,6 +96,23 @@ $$ language plpgsql;
 drop trigger if exists trades_updated_at on trades;
 create trigger trades_updated_at before update on trades
   for each row execute procedure update_updated_at();
+
+-- Compute pairing_key on insert/update. Same formula the generated column
+-- used; lives in a trigger so the STABLE timestamptz functions are allowed.
+create or replace function set_trade_pairing_key() returns trigger as $$
+begin
+  new.pairing_key :=
+    new.user_id || '|' || new.symbol || '|' || new.direction || '|' ||
+    extract(epoch from new.entry_at)::text || '|' ||
+    coalesce(extract(epoch from new.exit_at)::text, 'open') || '|' ||
+    new.quantity::text;
+  return new;
+end;
+$$ language plpgsql;
+
+drop trigger if exists trades_pairing_key on trades;
+create trigger trades_pairing_key before insert or update on trades
+  for each row execute procedure set_trade_pairing_key();
 
 -- ---------- column-mapping memory ----------
 -- Persist the user's last CSV column mapping so the second import is zero clicks.
