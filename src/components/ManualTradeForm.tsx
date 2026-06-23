@@ -10,7 +10,7 @@ export default function ManualTradeForm() {
   const [busy, setBusy] = useState(false);
 
   return (
-    <div className="rounded-2xl bg-card ring-1 ring-line">
+    <div className="rounded-2xl bg-card border border-line shadow-sm">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
@@ -50,7 +50,7 @@ export default function ManualTradeForm() {
             <button
               type="submit"
               disabled={busy}
-              className="rounded-xl bg-ink px-4 py-2 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60"
+              className="rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent-strong disabled:opacity-60"
             >
               {busy ? "Saving…" : "Add trade"}
             </button>

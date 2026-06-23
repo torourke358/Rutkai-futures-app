@@ -169,7 +169,7 @@ export default function ImportWizard({
 
       {/* Column mapping */}
       {result && phase !== "done" && (
-        <section className="rounded-2xl bg-card p-4 ring-1 ring-line space-y-3">
+        <section className="rounded-2xl bg-card p-4 border border-line shadow-sm space-y-3">
           <h2 className="text-sm font-semibold text-ink">Column mapping</h2>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {FIELDS.map((f) => (
@@ -214,7 +214,7 @@ export default function ImportWizard({
 
       {/* Preview */}
       {result && validCount > 0 && phase !== "done" && (
-        <section className="rounded-2xl bg-card ring-1 ring-line overflow-hidden">
+        <section className="rounded-2xl bg-card border border-line shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead className="bg-surface-2 uppercase tracking-wide text-muted">
@@ -253,7 +253,7 @@ export default function ImportWizard({
 
       {/* Error rows */}
       {result && errorCount > 0 && phase !== "done" && (
-        <details className="rounded-2xl bg-card p-4 ring-1 ring-line">
+        <details className="rounded-2xl bg-card p-4 border border-line shadow-sm">
           <summary className="cursor-pointer text-sm text-muted">
             {errorCount} skipped rows
           </summary>
@@ -273,7 +273,7 @@ export default function ImportWizard({
           type="button"
           onClick={confirmImport}
           disabled={phase === "uploading"}
-          className="rounded-xl bg-ink px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60"
+          className="rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-white hover:bg-accent-strong disabled:opacity-60"
         >
           {phase === "uploading"
             ? "Importing…"
@@ -292,7 +292,7 @@ export default function ImportWizard({
             <button
               type="button"
               onClick={() => router.push("/dashboard")}
-              className="rounded-lg bg-ink px-3 py-1.5 text-sm font-semibold text-white hover:opacity-90"
+              className="rounded-lg bg-accent px-3 py-1.5 text-sm font-semibold text-white hover:bg-accent-strong"
             >
               View dashboard
             </button>

@@ -22,6 +22,7 @@ import EquityCurve from "@/components/charts/EquityCurve";
 import DrawdownCurve from "@/components/charts/DrawdownCurve";
 import RDistribution from "@/components/charts/RDistribution";
 import PnlCalendar from "@/components/charts/PnlCalendar";
+import Gauge from "@/components/charts/Gauge";
 import BreakdownPanel from "@/components/dashboard/BreakdownPanel";
 
 interface Filters {
@@ -32,19 +33,11 @@ interface Filters {
   direction: string;
 }
 
-const EMPTY: Filters = {
-  from: "",
-  to: "",
-  symbol: "",
-  setup: "",
-  direction: "",
-};
+const EMPTY: Filters = { from: "", to: "", symbol: "", setup: "", direction: "" };
 
-export default function DashboardView({
-  trades,
-}: {
-  trades: TradeForStats[];
-}) {
+const card = "rounded-2xl border border-line bg-card shadow-sm";
+
+export default function DashboardView({ trades }: { trades: TradeForStats[] }) {
   const [filters, setFilters] = useState<Filters>(EMPTY);
 
   const symbols = useMemo(
@@ -74,33 +67,22 @@ export default function DashboardView({
   const drawdown = useMemo(() => computeDrawdownCurve(filtered), [filtered]);
   const calendar = useMemo(() => computeCalendar(filtered), [filtered]);
   const rdist = useMemo(() => computeRDistribution(filtered), [filtered]);
-  const bySetup = useMemo(
-    () => sliceStats(filtered, (t) => [t.setup_tag ?? "(unset)"]),
-    [filtered],
-  );
-  const bySymbol = useMemo(
-    () => sliceStats(filtered, (t) => [t.symbol]),
-    [filtered],
-  );
+  const bySetup = useMemo(() => sliceStats(filtered, (t) => [t.setup_tag ?? "(unset)"]), [filtered]);
+  const bySymbol = useMemo(() => sliceStats(filtered, (t) => [t.symbol]), [filtered]);
   const byDow = useMemo(() => sliceByDayOfWeek(filtered), [filtered]);
   const byHour = useMemo(() => sliceByHourOfDay(filtered), [filtered]);
 
+  const totalTrades = stats.wins + stats.losses + stats.breakEvens;
+
+  // Detailed metrics (the hero covers Net P&L + win rate + the headline four).
   const cards: { label: string; value: string; tone?: string }[] = [
-    { label: "Net P&L", value: formatSignedUsd(stats.netPnl), tone: pnlToneClass(stats.netPnl) },
-    { label: "Win rate", value: formatPct(stats.winRate) },
-    { label: "Profit factor", value: stats.profitFactor == null ? "∞" : stats.profitFactor.toFixed(2) },
-    { label: "Expectancy", value: formatSignedUsd(stats.expectancy), tone: pnlToneClass(stats.expectancy) },
     { label: "Expectancy (R)", value: stats.avgR == null ? "—" : `${stats.avgR.toFixed(2)}R`, tone: stats.avgR == null ? undefined : pnlToneClass(stats.avgR) },
-    { label: "Avg win", value: formatUsd(stats.avgWin), tone: "text-gain" },
-    { label: "Avg loss", value: formatUsd(stats.avgLoss), tone: "text-loss" },
     { label: "Payoff ratio", value: stats.payoffRatio == null ? "—" : stats.payoffRatio.toFixed(2) },
     { label: "Max drawdown", value: formatUsd(stats.maxDrawdown), tone: "text-loss" },
     { label: "Largest win", value: formatUsd(stats.largestWin), tone: "text-gain" },
     { label: "Largest loss", value: formatUsd(Math.abs(stats.largestLoss)), tone: "text-loss" },
     { label: "Win streak", value: `${stats.maxConsecWins}` },
     { label: "Loss streak", value: `${stats.maxConsecLosses}` },
-    { label: "Trades", value: `${stats.wins + stats.losses + stats.breakEvens}` },
-    { label: "Win / loss days", value: `${stats.winningDays} / ${stats.losingDays}` },
     { label: "Total fees", value: formatUsd(stats.fees), tone: "text-muted" },
   ];
 
@@ -110,86 +92,72 @@ export default function DashboardView({
   return (
     <div className="space-y-5 pb-8">
       {/* Filters */}
-      <div className="flex flex-wrap items-end gap-2 rounded-2xl bg-card p-3 ring-1 ring-line">
-        <FilterDate
-          label="From"
-          value={filters.from}
-          onChange={(v) => setFilters((f) => ({ ...f, from: v }))}
-        />
-        <FilterDate
-          label="To"
-          value={filters.to}
-          onChange={(v) => setFilters((f) => ({ ...f, to: v }))}
-        />
-        <FilterSelect
-          label="Symbol"
-          value={filters.symbol}
-          onChange={(v) => setFilters((f) => ({ ...f, symbol: v }))}
-          options={symbols}
-        />
-        <FilterSelect
-          label="Setup"
-          value={filters.setup}
-          onChange={(v) => setFilters((f) => ({ ...f, setup: v }))}
-          options={setups}
-        />
-        <FilterSelect
-          label="Direction"
-          value={filters.direction}
-          onChange={(v) => setFilters((f) => ({ ...f, direction: v }))}
-          options={["long", "short"]}
-        />
+      <div className={`flex flex-wrap items-end gap-2 ${card} p-3`}>
+        <FilterDate label="From" value={filters.from} onChange={(v) => setFilters((f) => ({ ...f, from: v }))} />
+        <FilterDate label="To" value={filters.to} onChange={(v) => setFilters((f) => ({ ...f, to: v }))} />
+        <FilterSelect label="Symbol" value={filters.symbol} onChange={(v) => setFilters((f) => ({ ...f, symbol: v }))} options={symbols} />
+        <FilterSelect label="Setup" value={filters.setup} onChange={(v) => setFilters((f) => ({ ...f, setup: v }))} options={setups} />
+        <FilterSelect label="Direction" value={filters.direction} onChange={(v) => setFilters((f) => ({ ...f, direction: v }))} options={["long", "short"]} />
         {hasFilters && (
-          <button
-            type="button"
-            onClick={() => setFilters(EMPTY)}
-            className="ml-auto rounded-lg px-2.5 py-1.5 text-xs text-muted hover:text-ink"
-          >
+          <button type="button" onClick={() => setFilters(EMPTY)} className="ml-auto rounded-lg px-2.5 py-1.5 text-xs text-muted hover:text-ink">
             Reset
           </button>
         )}
       </div>
 
-      {/* Stat cards */}
+      {/* Hero: net P&L + win-rate donut + headline metrics */}
+      <section className={`${card} p-5`}>
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <p className="text-[11px] font-medium uppercase tracking-wide text-muted">Net P&amp;L</p>
+            <p className={`font-display text-4xl font-semibold tabular-nums ${pnlToneClass(stats.netPnl)}`}>
+              {formatSignedUsd(stats.netPnl)}
+            </p>
+            <p className="mt-1 text-xs text-muted">
+              {totalTrades} trades · {stats.winningDays} green / {stats.losingDays} red days
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-6">
+            <Gauge value={stats.winRate} center={formatPct(stats.winRate)} sub="Win rate" arcColor="var(--gain)" />
+            <div className="grid grid-cols-2 gap-x-8 gap-y-3">
+              <Mini label="Profit factor" value={stats.profitFactor == null ? "∞" : stats.profitFactor.toFixed(2)} />
+              <Mini label="Expectancy" value={formatSignedUsd(stats.expectancy)} tone={pnlToneClass(stats.expectancy)} />
+              <Mini label="Avg win" value={formatUsd(stats.avgWin)} tone="text-gain" />
+              <Mini label="Avg loss" value={formatUsd(stats.avgLoss)} tone="text-loss" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Detailed metric cards */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {cards.map((c) => (
-          <div
-            key={c.label}
-            className="rounded-xl bg-card p-3 ring-1 ring-line"
-          >
-            <p className="text-[10px] font-medium uppercase tracking-wide text-muted">
-              {c.label}
-            </p>
-            <p className={`mt-1 text-lg font-semibold tabular-nums ${c.tone ?? "text-ink"}`}>
-              {c.value}
-            </p>
+          <div key={c.label} className={`${card} p-3`}>
+            <p className="text-[10px] font-medium uppercase tracking-wide text-muted">{c.label}</p>
+            <p className={`mt-1 text-lg font-semibold tabular-nums ${c.tone ?? "text-ink"}`}>{c.value}</p>
           </div>
         ))}
       </div>
 
       {/* Equity + drawdown */}
-      <section className="rounded-2xl bg-card p-4 ring-1 ring-line">
+      <section className={`${card} p-4`}>
         <h2 className="mb-2 text-sm font-semibold text-ink">Equity curve</h2>
         <EquityCurve data={equity} />
         <h2 className="mb-2 mt-4 text-sm font-semibold text-ink">Drawdown</h2>
         <DrawdownCurve data={drawdown} />
       </section>
 
-      {/* R distribution + calendar */}
-      <div className="grid gap-3 lg:grid-cols-2">
-        <section className="rounded-2xl bg-card p-4 ring-1 ring-line">
-          <h2 className="mb-2 text-sm font-semibold text-ink">
-            R-multiple distribution
-          </h2>
-          <RDistribution data={rdist} />
-        </section>
-        <section className="rounded-2xl bg-card p-4 ring-1 ring-line">
-          <h2 className="mb-2 text-sm font-semibold text-ink">
-            P&amp;L calendar
-          </h2>
-          <PnlCalendar days={calendar} />
-        </section>
-      </div>
+      {/* P&L calendar (full width — the signature view) */}
+      <section className={`${card} p-4`}>
+        <h2 className="mb-3 text-sm font-semibold text-ink">P&amp;L calendar</h2>
+        <PnlCalendar days={calendar} />
+      </section>
+
+      {/* R distribution */}
+      <section className={`${card} p-4`}>
+        <h2 className="mb-2 text-sm font-semibold text-ink">R-multiple distribution</h2>
+        <RDistribution data={rdist} />
+      </section>
 
       {/* Breakdowns */}
       <div className="grid gap-3 lg:grid-cols-2">
@@ -202,15 +170,16 @@ export default function DashboardView({
   );
 }
 
-function FilterDate({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-}) {
+function Mini({ label, value, tone = "text-ink" }: { label: string; value: string; tone?: string }) {
+  return (
+    <div>
+      <p className="text-[10px] font-medium uppercase tracking-wide text-muted">{label}</p>
+      <p className={`mt-0.5 text-base font-semibold tabular-nums ${tone}`}>{value}</p>
+    </div>
+  );
+}
+
+function FilterDate({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
     <label className="text-[10px] uppercase tracking-wide text-muted">
       {label}
@@ -218,7 +187,7 @@ function FilterDate({
         type="date"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-0.5 block rounded-lg bg-white border border-line px-2 py-1.5 text-sm text-ink ring-1 ring-line"
+        className="mt-0.5 block rounded-lg border border-line bg-white px-2 py-1.5 text-sm text-ink focus:border-accent"
       />
     </label>
   );
@@ -241,7 +210,7 @@ function FilterSelect({
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-0.5 block rounded-lg bg-white border border-line px-2 py-1.5 text-sm text-ink ring-1 ring-line"
+        className="mt-0.5 block rounded-lg border border-line bg-white px-2 py-1.5 text-sm text-ink focus:border-accent"
       >
         <option value="">All</option>
         {options.map((o) => (

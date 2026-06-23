@@ -71,7 +71,7 @@ export default function ReviewChat({ initial }: { initial: QA[] }) {
             <div className="rounded-2xl rounded-tr-sm bg-surface-2 px-4 py-2 text-sm text-ink ring-1 ring-line">
               {m.question}
             </div>
-            <div className="rounded-2xl rounded-tl-sm bg-card px-4 py-3 text-sm text-ink ring-1 ring-line">
+            <div className="rounded-2xl rounded-tl-sm bg-card px-4 py-3 text-sm text-ink border border-line shadow-sm">
               {m.pending ? (
                 <span className="text-muted">Analyzing your history…</span>
               ) : (
@@ -104,7 +104,7 @@ export default function ReviewChat({ initial }: { initial: QA[] }) {
         <button
           type="submit"
           disabled={busy || !input.trim()}
-          className="rounded-xl bg-ink px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60"
+          className="rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-white hover:bg-accent-strong disabled:opacity-60"
         >
           {busy ? "…" : "Ask"}
         </button>

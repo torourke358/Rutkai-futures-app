@@ -8,3 +8,8 @@ build/
 *.tsbuildinfo
 next-env.d.ts
 .DS_Store
+
+# local media / scratch (e.g. screen recordings dropped into the repo)
+*.mov
+*.mp4
+*.heic

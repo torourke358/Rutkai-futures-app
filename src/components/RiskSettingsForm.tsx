@@ -52,7 +52,7 @@ export default function RiskSettingsForm({
             key={m.value}
             className={`flex cursor-pointer gap-3 rounded-xl p-3 ring-1 ${
               method === m.value
-                ? "bg-surface-2 ring-ink"
+                ? "bg-surface-2 ring-accent"
                 : "bg-surface-2 ring-line"
             }`}
           >
@@ -132,7 +132,7 @@ export default function RiskSettingsForm({
       <div className="flex items-center gap-3">
         <button
           type="submit"
-          className="rounded-xl bg-ink px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+          className="rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent-strong"
         >
           Save risk settings
         </button>

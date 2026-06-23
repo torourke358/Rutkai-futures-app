@@ -141,7 +141,7 @@ export default function RegulatoryDesignPage() {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="mb-8 rounded-2xl border border-line bg-card p-5">
+    <section className="mb-8 rounded-2xl border border-line bg-card p-5 shadow-sm">
       <h2 className="font-display text-base font-semibold text-ink">{title}</h2>
       <div className="mt-3 text-sm leading-relaxed text-ink">{children}</div>
     </section>

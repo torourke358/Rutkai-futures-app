@@ -44,7 +44,7 @@ export default function StrategyConfigForm({
     >
       {config.id && <input type="hidden" name="id" value={config.id} />}
 
-      <section className="rounded-2xl border border-line bg-card p-4">
+      <section className="rounded-2xl border border-line bg-card p-4 shadow-sm">
         <h2 className="font-display text-sm font-semibold text-ink">Strategy</h2>
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           <label className="text-xs text-muted">
@@ -69,7 +69,7 @@ export default function StrategyConfigForm({
         </p>
       </section>
 
-      <section className="rounded-2xl border border-line bg-card p-4">
+      <section className="rounded-2xl border border-line bg-card p-4 shadow-sm">
         <h2 className="font-display text-sm font-semibold text-ink">Risk &amp; sizing</h2>
         <p className="mt-1 text-[11px] text-muted">
           Standard, unattributed risk-management concepts.
@@ -121,7 +121,7 @@ export default function StrategyConfigForm({
         </div>
       </section>
 
-      <section className="rounded-2xl border border-line bg-card p-4">
+      <section className="rounded-2xl border border-line bg-card p-4 shadow-sm">
         <h2 className="font-display text-sm font-semibold text-ink">Session guardrails</h2>
         <p className="mt-1 text-[11px] text-muted">Leave blank to disable a limit.</p>
         <div className="mt-3 grid gap-3 sm:grid-cols-3">
@@ -158,7 +158,7 @@ export default function StrategyConfigForm({
       </section>
 
       <div className="flex items-center gap-3">
-        <button type="submit" className="rounded-xl bg-ink px-4 py-2 text-sm font-semibold text-white hover:opacity-90">
+        <button type="submit" className="rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent-strong">
           Save strategy
         </button>
         {saved && <span className="text-xs text-gain">Saved ✓</span>}

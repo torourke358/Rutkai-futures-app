@@ -16,7 +16,7 @@ export default function BreakdownPanel({
   const maxAbs = Math.max(1, ...rows.map((r) => Math.abs(r.netPnl)));
 
   return (
-    <section className="rounded-2xl bg-card p-4 ring-1 ring-line">
+    <section className="rounded-2xl bg-card p-4 border border-line shadow-sm">
       <h3 className="mb-2 text-sm font-semibold text-ink">{title}</h3>
       {rows.length === 0 ? (
         <p className="py-4 text-center text-xs text-muted">No data.</p>

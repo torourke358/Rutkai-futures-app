@@ -23,7 +23,7 @@ export default async function AppLayout({
       <header className="safe-top sticky top-0 z-10 border-b border-line bg-card/85 backdrop-blur">
         <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3">
           <div className="flex items-center gap-2 font-display font-semibold text-ink">
-            <div className="grid h-7 w-7 place-items-center rounded-md bg-ink text-xs font-bold text-white">
+            <div className="grid h-7 w-7 place-items-center rounded-md bg-accent text-xs font-bold text-white">
               T
             </div>
             Thor

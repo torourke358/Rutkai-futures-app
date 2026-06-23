@@ -294,7 +294,7 @@ export default async function TradeDetailPage({
         <Stat label="Exit" value={trade.exit_price == null ? "—" : `${trade.exit_price}`} />
       </div>
 
-      <section className="rounded-2xl border border-line bg-card p-4">
+      <section className="rounded-2xl border border-line bg-card p-4 shadow-sm">
         <div className="mb-2 flex items-center justify-between">
           <h2 className="font-display text-sm font-semibold text-ink">Price &amp; excursion</h2>
           <p className="text-xs text-muted">
@@ -316,7 +316,7 @@ export default async function TradeDetailPage({
         )}
       </section>
 
-      <section className="rounded-2xl border border-line bg-card p-4">
+      <section className="rounded-2xl border border-line bg-card p-4 shadow-sm">
         <h2 className="mb-3 font-display text-sm font-semibold text-ink">Journal</h2>
         <TradeEditForm
           trade={{
@@ -332,7 +332,7 @@ export default async function TradeDetailPage({
         />
       </section>
 
-      <section className="rounded-2xl border border-line bg-card p-4">
+      <section className="rounded-2xl border border-line bg-card p-4 shadow-sm">
         <h2 className="mb-2 font-display text-sm font-semibold text-ink">
           Related executions
         </h2>
@@ -404,7 +404,7 @@ function Stat({
   tone?: string;
 }) {
   return (
-    <div className="rounded-xl border border-line bg-card p-3">
+    <div className="rounded-xl border border-line bg-card p-3 shadow-sm">
       <p className="text-[10px] font-medium uppercase tracking-wide text-muted">
         {label}
       </p>

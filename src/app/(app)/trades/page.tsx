@@ -76,7 +76,7 @@ export default async function TradesPage() {
       </div>
       <ManualTradeForm />
       {view.length === 0 ? (
-        <p className="rounded-2xl bg-card p-6 text-center text-sm text-muted ring-1 ring-line">
+        <p className="rounded-2xl bg-card p-6 text-center text-sm text-muted border border-line shadow-sm">
           No trades yet. Import a CSV or add one manually above.
         </p>
       ) : (

@@ -57,7 +57,7 @@ export default function WhatIfPanel({ symbols }: { symbols: string[] }) {
   return (
     <div className="space-y-4">
       {/* NL → params (the AI only pre-fills the controls below) */}
-      <div className="rounded-2xl border border-line bg-card p-4">
+      <div className="rounded-2xl border border-line bg-card p-4 shadow-sm">
         <label className="text-xs font-medium text-muted">
           Describe a change (optional)
           <div className="mt-1 flex gap-2">
@@ -84,7 +84,7 @@ export default function WhatIfPanel({ symbols }: { symbols: string[] }) {
       </div>
 
       {/* deterministic controls */}
-      <div className="rounded-2xl border border-line bg-card p-4">
+      <div className="rounded-2xl border border-line bg-card p-4 shadow-sm">
         <div className="grid gap-3 sm:grid-cols-4">
           <label className="text-xs font-medium text-muted">
             Instrument
@@ -137,7 +137,7 @@ export default function WhatIfPanel({ symbols }: { symbols: string[] }) {
             type="button"
             onClick={onRun}
             disabled={pending}
-            className="rounded-xl bg-ink px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+            className="rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent-strong disabled:opacity-60"
           >
             {pending ? "Re-running your trades…" : "Run what-if sweep"}
           </button>
@@ -164,7 +164,7 @@ function Results({ result }: { result: SweepActionResult }) {
     <div className="space-y-4">
       {/* AI narration of the deterministic result */}
       {result.narration && (
-        <div className="rounded-2xl border border-line bg-card p-4">
+        <div className="rounded-2xl border border-line bg-card p-4 shadow-sm">
           <p className="text-[10px] font-medium uppercase tracking-wide text-muted">
             Retrospective recomputation of your own trades
           </p>
@@ -230,7 +230,7 @@ function Bucket({
 }) {
   const color = tone === "gain" ? "var(--gain)" : "var(--loss)";
   return (
-    <div className="rounded-2xl border border-line bg-card p-4">
+    <div className="rounded-2xl border border-line bg-card p-4 shadow-sm">
       <div className="flex items-center gap-2">
         <span className="h-2 w-2 rounded-full" style={{ backgroundColor: color }} />
         <h3 className="font-display text-sm font-semibold text-ink">{title}</h3>
@@ -276,7 +276,7 @@ function Bucket({
 
 function Stat({ label, value, tone = "text-ink" }: { label: string; value: string; tone?: string }) {
   return (
-    <div className="rounded-xl border border-line bg-card p-3">
+    <div className="rounded-xl border border-line bg-card p-3 shadow-sm">
       <p className="text-[10px] font-medium uppercase tracking-wide text-muted">{label}</p>
       <p className={`mt-1 font-mono text-sm font-semibold tabular-nums ${tone}`}>{value}</p>
     </div>

@@ -24,9 +24,10 @@
   --long: #2563eb;      /* azure */
   --short: #e08a1e;     /* amber */
 
-  /* The one confident control on the screen: used ONLY for the primary action
-     (Approve). Nothing decorative may use it. */
-  --accent: #5b5bf0;    /* indigo */
+  /* Primary accent — teal, used freely for active nav, links, highlights, and
+     primary actions (CrossTrade-style look). */
+  --accent: #0fb5ab;    /* teal */
+  --accent-strong: #0c8f87; /* hover/darker teal */
 
   /* Back-compat aliases for components authored against the old dark names.
      They now resolve to LIGHT values, so a bare variable swap re-themes them. */
@@ -56,6 +57,7 @@
   --color-long: var(--long);
   --color-short: var(--short);
   --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
 
   /* Display / body / tabular-numeric type. */
   --font-display: var(--font-space-grotesk);

@@ -31,7 +31,7 @@ export default async function AuditPage() {
   return (
     <div className="space-y-4 pb-8">
       <h1 className="text-lg font-semibold text-ink">Audit log</h1>
-      <div className="overflow-x-auto rounded-2xl bg-card ring-1 ring-line">
+      <div className="overflow-x-auto rounded-2xl bg-card border border-line shadow-sm">
         <table className="w-full text-sm">
           <thead className="bg-surface-2 text-xs uppercase tracking-wide text-muted">
             <tr>

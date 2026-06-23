@@ -134,7 +134,7 @@ export default async function EnginePage() {
       ) : (
         <>
           {/* active strategy summary */}
-          <div className="rounded-2xl border border-line bg-card p-4">
+          <div className="rounded-2xl border border-line bg-card p-4 shadow-sm">
             <div className="flex items-center justify-between">
               <h2 className="font-display text-sm font-semibold text-ink">{config.name}</h2>
               <span className="font-mono text-[11px] text-muted">{config.entry_plugin_id}</span>
@@ -164,7 +164,7 @@ export default async function EnginePage() {
           )}
 
           {/* guardrail status */}
-          <div className="rounded-2xl border border-line bg-card p-4">
+          <div className="rounded-2xl border border-line bg-card p-4 shadow-sm">
             <h2 className="mb-2 font-display text-sm font-semibold text-ink">Session guardrails</h2>
             <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs sm:grid-cols-4">
               <Param label="Sim P&L today" value={formatSignedUsd(sessionPnl)} />
@@ -176,7 +176,7 @@ export default async function EnginePage() {
 
           {/* recent activity */}
           {recent && recent.length > 0 && (
-            <div className="rounded-2xl border border-line bg-card p-4">
+            <div className="rounded-2xl border border-line bg-card p-4 shadow-sm">
               <h2 className="mb-2 font-display text-sm font-semibold text-ink">Recent candidates</h2>
               <ul className="divide-y divide-line text-sm">
                 {recent.map((r) => (
@@ -223,7 +223,7 @@ function EmptyState() {
       </p>
       <Link
         href="/strategy"
-        className="mt-3 inline-block rounded-xl bg-ink px-4 py-2 text-sm font-semibold text-white"
+        className="mt-3 inline-block rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent-strong"
       >
         Configure strategy
       </Link>

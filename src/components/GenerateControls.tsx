@@ -25,7 +25,7 @@ export default function GenerateControls({ symbols }: { symbols: string[] }) {
   }
 
   return (
-    <div className="rounded-2xl border border-line bg-card p-4">
+    <div className="rounded-2xl border border-line bg-card p-4 shadow-sm">
       <div className="flex flex-wrap items-end gap-3">
         <label className="text-xs font-medium text-muted">
           Instrument
@@ -45,7 +45,7 @@ export default function GenerateControls({ symbols }: { symbols: string[] }) {
           type="button"
           onClick={generate}
           disabled={pending}
-          className="rounded-xl bg-ink px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+          className="rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent-strong disabled:opacity-60"
         >
           {pending ? "Scanning bars…" : "Generate candidate"}
         </button>

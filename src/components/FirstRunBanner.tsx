@@ -16,7 +16,7 @@ export default function FirstRunBanner() {
       </div>
       <Link
         href="/account/settings"
-        className="rounded-lg bg-ink px-3 py-1.5 text-sm font-semibold text-white hover:opacity-90"
+        className="rounded-lg bg-accent px-3 py-1.5 text-sm font-semibold text-white hover:bg-accent-strong"
       >
         Set up risk
       </Link>

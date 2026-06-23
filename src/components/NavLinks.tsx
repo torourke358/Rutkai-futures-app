@@ -25,8 +25,8 @@ export default function NavLinks({ role }: { role: "trader" | "admin" }) {
   }
   const tabClass = (active: boolean) =>
     active
-      ? "rounded-md bg-surface-2 px-2.5 py-1 font-semibold text-ink"
-      : "rounded-md px-2.5 py-1 text-muted hover:text-ink";
+      ? "rounded-lg bg-accent/10 px-2.5 py-1 font-semibold text-accent"
+      : "rounded-lg px-2.5 py-1 text-muted hover:bg-surface-2 hover:text-ink";
 
   async function signOut() {
     setSigningOut(true);

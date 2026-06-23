@@ -64,7 +64,7 @@ export default async function PaperPage() {
           </p>
           <Link
             href="/engine"
-            className="mt-3 inline-block rounded-xl bg-ink px-4 py-2 text-sm font-semibold text-white"
+            className="mt-3 inline-block rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent-strong"
           >
             Go to engine
           </Link>
@@ -77,7 +77,7 @@ export default async function PaperPage() {
             <Summary label="Hypothetical win rate" value={winRate == null ? "—" : `${winRate}%`} />
           </div>
 
-          <div className="overflow-x-auto rounded-2xl border border-line bg-card">
+          <div className="overflow-x-auto rounded-2xl border border-line bg-card shadow-sm">
             <table className="w-full text-sm">
               <thead className="text-[10px] uppercase tracking-wide text-muted">
                 <tr className="border-b border-line">
@@ -126,7 +126,7 @@ export default async function PaperPage() {
 
 function Summary({ label, value, tone = "text-ink" }: { label: string; value: string; tone?: string }) {
   return (
-    <div className="rounded-xl border border-line bg-card p-3">
+    <div className="rounded-xl border border-line bg-card p-3 shadow-sm">
       <p className="text-[10px] font-medium uppercase tracking-wide text-muted">{label}</p>
       <p className={`mt-1 font-mono text-sm font-semibold tabular-nums ${tone}`}>{value}</p>
     </div>

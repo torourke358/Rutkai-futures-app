@@ -94,7 +94,7 @@ export default async function SettingsPage() {
           </label>
           <button
             type="submit"
-            className="rounded-lg bg-ink px-3 py-2 text-sm font-semibold text-white hover:opacity-90"
+            className="rounded-lg bg-accent px-3 py-2 text-sm font-semibold text-white hover:bg-accent-strong"
           >
             Add
           </button>
@@ -159,7 +159,7 @@ export default async function SettingsPage() {
             </label>
             <button
               type="submit"
-              className="rounded-lg bg-ink px-3 py-2 text-sm font-semibold text-white hover:opacity-90"
+              className="rounded-lg bg-accent px-3 py-2 text-sm font-semibold text-white hover:bg-accent-strong"
             >
               Save
             </button>
@@ -212,7 +212,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-2xl bg-card p-4 ring-1 ring-line">
+    <section className="rounded-2xl bg-card p-4 border border-line shadow-sm">
       <h2 className="text-sm font-semibold text-ink">{title}</h2>
       <p className="mt-1 mb-3 text-xs text-muted">{subtitle}</p>
       {children}
