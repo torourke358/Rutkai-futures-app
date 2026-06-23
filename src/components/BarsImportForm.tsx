@@ -153,6 +153,22 @@ export default function BarsImportForm({ symbols }: { symbols: string[] }) {
 
       {stage === "preview" && (
         <div className="mt-3 space-y-3">
+          {/* Make the destination instrument unmissable before importing. */}
+          <div className="flex items-center gap-2 rounded-xl border border-line bg-surface-2 px-3 py-2 text-sm">
+            <span className="text-muted">Importing as</span>
+            <span className="rounded bg-card px-1.5 py-0.5 font-mono text-base font-semibold text-ink ring-1 ring-line">
+              {symbol.trim().toUpperCase() || "—"}
+            </span>
+            <span className="text-muted">·</span>
+            <span className="font-mono text-ink">{timeframe}</span>
+            <button
+              type="button"
+              onClick={() => setStage("choose")}
+              className="ml-auto text-xs text-muted underline hover:text-ink"
+            >
+              change
+            </button>
+          </div>
           <div className="rounded-xl border border-line bg-surface p-3 text-sm text-ink">
             <p className="font-medium">
               {rows.length.toLocaleString()} bars parsed
@@ -181,7 +197,9 @@ export default function BarsImportForm({ symbols }: { symbols: string[] }) {
               disabled={busy}
               className="rounded-lg bg-ink px-3 py-2 text-sm font-medium text-white disabled:opacity-60"
             >
-              {busy ? "Importing…" : `Import ${rows.length.toLocaleString()} bars`}
+              {busy
+                ? "Importing…"
+                : `Import ${rows.length.toLocaleString()} bars as ${symbol.trim().toUpperCase() || "—"}`}
             </button>
             <button
               type="button"
