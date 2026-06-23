@@ -27,6 +27,21 @@ export async function saveTradeNote(id: string, notes: string) {
   revalidatePath("/trades");
 }
 
+// Inline setup-tag save from the trades table. Revalidates the dashboard too
+// since the "By setup" breakdown reads this tag.
+export async function saveTradeSetup(id: string, setup: string) {
+  const { supabase, user } = await requireUser();
+  if (!user) return;
+  const { error } = await supabase
+    .from("trades")
+    .update({ setup_tag: setup.trim() || null })
+    .eq("id", id)
+    .eq("user_id", user.id);
+  if (error) throw new Error(error.message);
+  revalidatePath("/trades");
+  revalidatePath("/dashboard");
+}
+
 // Full annotation save from the trade detail form. None of these fields are
 // derived from executions, so no re-pairing is needed — they're stored on the
 // trade row. (risk_amount changes R, but R is computed at read time.)

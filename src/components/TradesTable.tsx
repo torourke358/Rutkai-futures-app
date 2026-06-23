@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { formatDateTime, formatSignedUsd, pnlToneClass } from "@/lib/format";
-import { saveTradeNote } from "@/app/(app)/trades/actions";
+import { saveTradeNote, saveTradeSetup } from "@/app/(app)/trades/actions";
 
 export interface TradeRowView {
   id: string;
@@ -31,6 +31,7 @@ type SortKey =
   | "setup_tag";
 
 export default function TradesTable({ rows }: { rows: TradeRowView[] }) {
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<"all" | "open" | "closed">("all");
   const [sort, setSort] = useState<{ key: SortKey; dir: 1 | -1 }>({
@@ -82,7 +83,7 @@ export default function TradesTable({ rows }: { rows: TradeRowView[] }) {
           <option value="closed">Closed</option>
           <option value="open">Open</option>
         </select>
-        <span className="ml-auto text-xs text-muted">{view.length} trades</span>
+        <span className="ml-auto text-xs text-muted">{view.length} trades · click a row to open</span>
       </div>
 
       <div className="overflow-x-auto rounded-2xl bg-card ring-1 ring-line">
@@ -100,15 +101,20 @@ export default function TradesTable({ rows }: { rows: TradeRowView[] }) {
               <Th onClick={() => toggleSort("setup_tag")} active={sort.key === "setup_tag"} dir={sort.dir}>Setup</Th>
               <th className="px-3 py-2 text-left">Notes</th>
               <th className="px-3 py-2 text-left">Status</th>
+              <th className="px-3 py-2"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-line">
             {view.map((r) => (
-              <tr key={r.id} className="hover:bg-surface-2">
-                <td className="px-3 py-2 font-semibold text-ink">
-                  <Link href={`/trades/${r.id}`} className="text-muted hover:text-ink">
+              <tr
+                key={r.id}
+                onClick={() => router.push(`/trades/${r.id}`)}
+                className="cursor-pointer hover:bg-surface-2"
+              >
+                <td className="px-3 py-2 font-semibold">
+                  <span className="text-ink underline decoration-dotted decoration-line underline-offset-4">
                     {r.symbol}
-                  </Link>
+                  </span>
                 </td>
                 <td className="px-3 py-2">{r.direction}</td>
                 <td className="px-3 py-2 text-right tabular-nums">{r.quantity}</td>
@@ -121,8 +127,11 @@ export default function TradesTable({ rows }: { rows: TradeRowView[] }) {
                   {r.r == null ? "—" : `${r.r.toFixed(2)}R`}
                 </td>
                 <td className="px-3 py-2 text-muted">{formatDateTime(r.exit_at)}</td>
-                <td className="px-3 py-2 text-muted">{r.setup_tag ?? "—"}</td>
-                <td className="px-3 py-2">
+                {/* inline editors: stop row navigation when interacting */}
+                <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
+                  <SetupCell id={r.id} initial={r.setup_tag} />
+                </td>
+                <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
                   <NoteCell id={r.id} initial={r.notes} />
                 </td>
                 <td className="px-3 py-2">
@@ -135,6 +144,9 @@ export default function TradesTable({ rows }: { rows: TradeRowView[] }) {
                   >
                     {r.status}
                   </span>
+                </td>
+                <td className="px-3 py-2 text-right text-muted" aria-hidden>
+                  ›
                 </td>
               </tr>
             ))}
@@ -169,6 +181,49 @@ function Th({
         {active && <span>{dir === 1 ? "▲" : "▼"}</span>}
       </button>
     </th>
+  );
+}
+
+// Inline editable setup tag. Mirrors NoteCell; click to edit, blur to save.
+function SetupCell({ id, initial }: { id: string; initial: string | null }) {
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(initial ?? "");
+  const [saving, setSaving] = useState(false);
+
+  if (!editing) {
+    return (
+      <button
+        type="button"
+        onClick={() => setEditing(true)}
+        className="max-w-[10rem] truncate text-left text-muted hover:text-ink"
+        title={value || "Add setup tag"}
+      >
+        {value || <span className="text-muted">tag…</span>}
+      </button>
+    );
+  }
+  return (
+    <input
+      autoFocus
+      value={value}
+      disabled={saving}
+      onChange={(e) => setValue(e.target.value)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+        if (e.key === "Escape") {
+          setValue(initial ?? "");
+          setEditing(false);
+        }
+      }}
+      onBlur={async () => {
+        setSaving(true);
+        await saveTradeSetup(id, value);
+        setSaving(false);
+        setEditing(false);
+      }}
+      placeholder="e.g. breakout"
+      className="w-32 rounded-md bg-white border border-line px-2 py-1 text-xs text-ink ring-1 ring-line focus:border-accent"
+    />
   );
 }
 
