@@ -41,6 +41,13 @@ export default function WhatIfPanel({ symbols }: { symbols: string[] }) {
   function onSuggest() {
     if (!question.trim()) return;
     setError(null);
+    // Instrument detection from the user's OWN symbols (deterministic — the
+    // symbol list lives here, not in the param mapper).
+    const q = question.toUpperCase();
+    const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const found = symbols.find((s) => new RegExp(`\\b${esc(s.toUpperCase())}\\b`).test(q));
+    if (found) setSymbol(found);
+    else if (/\bALL\b|\bEVERY\b|ALL MY/.test(q)) setSymbol("all");
     startMapping(async () => {
       const p = await suggestParams(question.trim());
       applyParams(p);
