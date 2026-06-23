@@ -16,14 +16,14 @@ export default function BreakdownPanel({
   const maxAbs = Math.max(1, ...rows.map((r) => Math.abs(r.netPnl)));
 
   return (
-    <section className="rounded-2xl bg-[var(--surface)] p-4 ring-1 ring-[var(--border)]">
-      <h3 className="mb-2 text-sm font-semibold text-slate-100">{title}</h3>
+    <section className="rounded-2xl bg-card p-4 ring-1 ring-line">
+      <h3 className="mb-2 text-sm font-semibold text-ink">{title}</h3>
       {rows.length === 0 ? (
-        <p className="py-4 text-center text-xs text-slate-500">No data.</p>
+        <p className="py-4 text-center text-xs text-muted">No data.</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
-            <thead className="text-[10px] uppercase tracking-wide text-slate-500">
+            <thead className="text-[10px] uppercase tracking-wide text-muted">
               <tr>
                 <th className="py-1 text-left">{labelHeader}</th>
                 <th className="py-1 text-right">Trades</th>
@@ -35,17 +35,17 @@ export default function BreakdownPanel({
             </thead>
             <tbody>
               {rows.map((r) => (
-                <tr key={r.label} className="border-t border-[var(--border)]">
-                  <td className="py-1.5 pr-2 font-medium text-slate-200">
+                <tr key={r.label} className="border-t border-line">
+                  <td className="py-1.5 pr-2 font-medium text-ink">
                     {r.label}
                   </td>
-                  <td className="py-1.5 text-right tabular-nums text-slate-400">
+                  <td className="py-1.5 text-right tabular-nums text-muted">
                     {r.count}
                   </td>
-                  <td className="py-1.5 text-right tabular-nums text-slate-300">
+                  <td className="py-1.5 text-right tabular-nums text-muted">
                     {formatPct(r.winRate)}
                   </td>
-                  <td className="py-1.5 text-right tabular-nums text-slate-300">
+                  <td className="py-1.5 text-right tabular-nums text-muted">
                     {r.avgR == null ? "—" : `${r.avgR.toFixed(2)}R`}
                   </td>
                   <td
@@ -59,7 +59,7 @@ export default function BreakdownPanel({
                         className="hidden h-1.5 rounded-full sm:block"
                         style={{
                           width: `${(Math.abs(r.netPnl) / maxAbs) * 56}px`,
-                          backgroundColor: r.netPnl >= 0 ? "#34d399" : "#f87171",
+                          backgroundColor: r.netPnl >= 0 ? "#15a66a" : "#e0413e",
                         }}
                       />
                       <span

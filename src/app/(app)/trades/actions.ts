@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { repairAndPersist } from "@/lib/trades/repair";
+import { recomputeForUser, type RecomputeSummary } from "@/lib/analysis/persist";
 import { writeAudit } from "@/lib/audit";
 
 async function requireUser() {
@@ -40,13 +41,19 @@ export async function updateTradeAnnotations(form: FormData) {
     : null;
   const ratingRaw = form.get("rating");
   const riskRaw = form.get("risk_amount");
+  const stopRaw = form.get("planned_stop_price");
+  const targetRaw = form.get("planned_target_price");
+  const numOrNull = (v: FormDataEntryValue | null) =>
+    v !== null && v !== "" ? Number(v) : null;
 
   const patch = {
     setup_tag: (String(form.get("setup_tag") ?? "").trim() || null) as string | null,
     tags,
     rating: ratingRaw ? Number(ratingRaw) : null,
     notes: (String(form.get("notes") ?? "").trim() || null) as string | null,
-    risk_amount: riskRaw !== null && riskRaw !== "" ? Number(riskRaw) : null,
+    risk_amount: numOrNull(riskRaw),
+    planned_stop_price: numOrNull(stopRaw),
+    planned_target_price: numOrNull(targetRaw),
   };
 
   const { error } = await supabase
@@ -67,6 +74,27 @@ export async function updateTradeAnnotations(form: FormData) {
   revalidatePath(`/trades/${id}`);
   revalidatePath("/trades");
   revalidatePath("/dashboard");
+}
+
+// Recompute and STORE MAE/MFE/R across all closed trades that have imported
+// bars. Triggered by an explicit button — never automatic. Descriptive of the
+// user's own fills; touches no money path.
+export async function recomputeExcursions(): Promise<RecomputeSummary | null> {
+  const { supabase, user } = await requireUser();
+  if (!user) return null;
+
+  const summary = await recomputeForUser(supabase, user.id);
+
+  await writeAudit({
+    user_id: user.id,
+    entity_type: "analysis",
+    action: "update",
+    after_state: summary,
+  });
+
+  revalidatePath("/trades");
+  revalidatePath("/dashboard");
+  return summary;
 }
 
 // Manual trade entry → write entry (+ optional exit) executions with

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { getAnthropic, CLAUDE_MODEL, ANALYST_SYSTEM_PROMPT } from "@/lib/claude";
+import { lintPrescriptive, regenerationHint } from "@/lib/ai/lint";
 import { annotateRisk, type RiskSettings, type CashFlow } from "@/lib/risk";
 import {
   computeStats,
@@ -98,26 +99,44 @@ export async function POST(req: Request) {
     byHourOfDay: sliceByHourOfDay(trades),
   };
 
+  const baseContent = `Here is a JSON summary of my closed trades. Answer using ONLY this data.\n\nSUMMARY:\n${JSON.stringify(
+    summary,
+  )}\n\nQUESTION: ${body.question}`;
+
   let answer = "";
+  let guarded = false; // true if the prescriptive-language lint intervened
   try {
     const client = getAnthropic();
-    const msg = await client.messages.create({
-      model: CLAUDE_MODEL,
-      max_tokens: 1024,
-      system: ANALYST_SYSTEM_PROMPT,
-      messages: [
-        {
-          role: "user",
-          content: `Here is a JSON summary of my closed trades. Answer using ONLY this data.\n\nSUMMARY:\n${JSON.stringify(
-            summary,
-          )}\n\nQUESTION: ${body.question}`,
-        },
-      ],
-    });
-    answer = msg.content
-      .map((b) => (b.type === "text" ? b.text : ""))
-      .join("\n")
-      .trim();
+
+    const ask = async (extraSystem?: string) => {
+      const msg = await client.messages.create({
+        model: CLAUDE_MODEL,
+        max_tokens: 1024,
+        system: extraSystem
+          ? `${ANALYST_SYSTEM_PROMPT}\n\n${extraSystem}`
+          : ANALYST_SYSTEM_PROMPT,
+        messages: [{ role: "user", content: baseContent }],
+      });
+      return msg.content
+        .map((b) => (b.type === "text" ? b.text : ""))
+        .join("\n")
+        .trim();
+    };
+
+    answer = await ask();
+
+    // Scan the output BEFORE returning it. On a hit, regenerate exactly once
+    // with a targeted instruction; if it still trips the lint, withhold the
+    // prose entirely and return the raw precomputed metrics instead.
+    let lint = lintPrescriptive(answer);
+    if (lint.flagged) {
+      guarded = true;
+      answer = await ask(regenerationHint(lint.hits));
+      lint = lintPrescriptive(answer);
+      if (lint.flagged) {
+        answer = rawMetricsFallback(summary);
+      }
+    }
   } catch (err) {
     return NextResponse.json(
       { error: "AI request failed", detail: String(err) },
@@ -129,5 +148,36 @@ export async function POST(req: Request) {
     .from("ai_questions")
     .insert({ user_id: user.id, question: body.question, answer });
 
-  return NextResponse.json({ answer });
+  return NextResponse.json({ answer, guarded });
+}
+
+// No-prose fallback: just the precomputed numbers, so a question that keeps
+// steering the model toward advice degrades to a plain description of the
+// user's own history rather than ever shipping a recommendation.
+function rawMetricsFallback(summary: {
+  totalClosedTrades: number;
+  overall: {
+    netPnl: number;
+    winRate: number;
+    expectancy: number;
+    profitFactor: number | null;
+    avgR: number | null;
+    maxDrawdown: number;
+    largestWin: number;
+    largestLoss: number;
+  };
+}): string {
+  const s = summary.overall;
+  const pct = (r: number) => `${Math.round(r * 100)}%`;
+  return [
+    "I can only describe your own historical data, so here are the raw numbers:",
+    `• Closed trades: ${summary.totalClosedTrades}`,
+    `• Net P&L: ${s.netPnl}`,
+    `• Win rate: ${pct(s.winRate)}`,
+    `• Expectancy: ${s.expectancy} per trade`,
+    `• Profit factor: ${s.profitFactor ?? "n/a"}`,
+    `• Average R: ${s.avgR ?? "n/a"}`,
+    `• Max drawdown: ${s.maxDrawdown}`,
+    `• Largest win / loss: ${s.largestWin} / ${s.largestLoss}`,
+  ].join("\n");
 }

@@ -16,7 +16,7 @@ export default function EquityCurve({ data }: { data: EquityPoint[] }) {
   if (data.length === 0) return <Empty />;
   const last = data[data.length - 1].cumulative;
   const positive = last >= 0;
-  const color = positive ? "#34d399" : "#f87171";
+  const color = positive ? "#15a66a" : "#e0413e";
 
   // Index the points so a flat X axis reads as trade sequence, not calendar.
   const series = data.map((p, i) => ({ ...p, i }));
@@ -30,17 +30,17 @@ export default function EquityCurve({ data }: { data: EquityPoint[] }) {
             <stop offset="100%" stopColor={color} stopOpacity={0} />
           </linearGradient>
         </defs>
-        <CartesianGrid stroke="#1e2a44" vertical={false} />
+        <CartesianGrid stroke="#e3e9f2" vertical={false} />
         <XAxis
           dataKey="i"
-          tick={{ fill: "#64748b", fontSize: 11 }}
+          tick={{ fill: "#5b6b82", fontSize: 11 }}
           tickLine={false}
-          axisLine={{ stroke: "#1e2a44" }}
+          axisLine={{ stroke: "#e3e9f2" }}
           tickFormatter={(i) => `#${i + 1}`}
           minTickGap={40}
         />
         <YAxis
-          tick={{ fill: "#64748b", fontSize: 11 }}
+          tick={{ fill: "#5b6b82", fontSize: 11 }}
           tickLine={false}
           axisLine={false}
           width={56}
@@ -64,16 +64,16 @@ export default function EquityCurve({ data }: { data: EquityPoint[] }) {
 }
 
 const tooltipStyle = {
-  background: "#111a2e",
-  border: "1px solid #1e2a44",
+  background: "#ffffff",
+  border: "1px solid #e3e9f2",
   borderRadius: 8,
   fontSize: 12,
-  color: "#e2e8f0",
+  color: "#0f1a2e",
 };
 
 function Empty() {
   return (
-    <div className="grid h-[240px] place-items-center text-sm text-slate-500">
+    <div className="grid h-[240px] place-items-center text-sm text-muted">
       No data for the current filters.
     </div>
   );

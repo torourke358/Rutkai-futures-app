@@ -39,6 +39,9 @@ export async function updateSession(request: NextRequest) {
     pathname.startsWith("/manifest") ||
     pathname.startsWith("/icon-") ||
     pathname === "/favicon.ico";
+  // The regulatory-design page is meant to be shareable with counsel, who may
+  // not have an account — keep /about/* readable without auth.
+  const isPublicRoute = pathname.startsWith("/about");
 
   function redirectTo(p: string) {
     const url = request.nextUrl.clone();
@@ -48,7 +51,7 @@ export async function updateSession(request: NextRequest) {
     return res;
   }
 
-  if (!user && !isAuthRoute && !isPublicAsset) return redirectTo("/login");
+  if (!user && !isAuthRoute && !isPublicAsset && !isPublicRoute) return redirectTo("/login");
   if (user && isAuthRoute) return redirectTo("/dashboard");
 
   return supabaseResponse;

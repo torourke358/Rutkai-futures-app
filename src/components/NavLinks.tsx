@@ -9,6 +9,10 @@ const TABS = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/trades", label: "Trades" },
   { href: "/import", label: "Import" },
+  { href: "/engine", label: "Engine" },
+  { href: "/strategy", label: "Strategy" },
+  { href: "/paper", label: "Paper" },
+  { href: "/whatif", label: "What-if" },
   { href: "/review", label: "Review" },
 ];
 
@@ -21,8 +25,8 @@ export default function NavLinks({ role }: { role: "trader" | "admin" }) {
   }
   const tabClass = (active: boolean) =>
     active
-      ? "rounded-md bg-indigo-500/15 px-2.5 py-1 font-semibold text-indigo-300 ring-1 ring-indigo-400/30"
-      : "rounded-md px-2.5 py-1 text-slate-400 hover:text-slate-100";
+      ? "rounded-md bg-surface-2 px-2.5 py-1 font-semibold text-ink"
+      : "rounded-md px-2.5 py-1 text-muted hover:text-ink";
 
   async function signOut() {
     setSigningOut(true);
@@ -39,24 +43,18 @@ export default function NavLinks({ role }: { role: "trader" | "admin" }) {
         </Link>
       ))}
       {role === "admin" && (
-        <Link
-          href="/admin/audit"
-          className={tabClass(isActive("/admin/audit"))}
-        >
+        <Link href="/admin/audit" className={tabClass(isActive("/admin/audit"))}>
           Audit
         </Link>
       )}
-      <Link
-        href="/account/password"
-        className={tabClass(isActive("/account/password"))}
-      >
+      <Link href="/account/password" className={tabClass(isActive("/account/password"))}>
         Password
       </Link>
       <button
         type="button"
         onClick={signOut}
         disabled={signingOut}
-        className="rounded-md px-2.5 py-1 text-slate-400 hover:text-rose-300 disabled:opacity-60"
+        className="rounded-md px-2.5 py-1 text-muted hover:text-loss disabled:opacity-60"
       >
         Sign out
       </button>

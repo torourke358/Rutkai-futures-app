@@ -40,37 +40,37 @@ export default function PasswordForm() {
 
   return (
     <form onSubmit={submit} className="space-y-3">
-      <label className="block text-xs text-slate-400">
+      <label className="block text-xs text-muted">
         New password
         <input
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           autoComplete="new-password"
-          className="mt-1 w-full rounded-lg bg-[var(--surface-2)] px-3 py-2 text-slate-100 ring-1 ring-[var(--border)]"
+          className="mt-1 w-full rounded-lg bg-white px-3 py-2 text-ink border border-line focus:border-accent"
         />
       </label>
-      <label className="block text-xs text-slate-400">
+      <label className="block text-xs text-muted">
         Confirm password
         <input
           type="password"
           value={confirm}
           onChange={(e) => setConfirm(e.target.value)}
           autoComplete="new-password"
-          className="mt-1 w-full rounded-lg bg-[var(--surface-2)] px-3 py-2 text-slate-100 ring-1 ring-[var(--border)]"
+          className="mt-1 w-full rounded-lg bg-white px-3 py-2 text-ink border border-line focus:border-accent"
         />
       </label>
       <button
         type="submit"
         disabled={status === "saving"}
-        className="rounded-xl bg-indigo-500 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-400 disabled:opacity-60"
+        className="rounded-xl bg-ink px-4 py-2 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60"
       >
         {status === "saving" ? "Saving…" : "Update password"}
       </button>
       {message && (
         <p
           className={`text-xs ${
-            status === "error" ? "text-rose-300" : "text-emerald-300"
+            status === "error" ? "text-loss" : "text-gain"
           }`}
         >
           {message}

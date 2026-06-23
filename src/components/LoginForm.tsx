@@ -29,7 +29,7 @@ export default function LoginForm() {
   return (
     <form onSubmit={submit} className="space-y-3">
       <div>
-        <label className="block text-xs font-medium uppercase tracking-wide text-slate-400">
+        <label className="block text-xs font-medium uppercase tracking-wide text-muted">
           Email
         </label>
         <input
@@ -37,11 +37,11 @@ export default function LoginForm() {
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="mt-1 block w-full rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-base text-slate-100 outline-none focus:ring-2 focus:ring-indigo-500/50"
+          className="mt-1 block w-full rounded-lg border border-line bg-white px-3 py-2 text-base text-ink outline-none focus:border-accent"
         />
       </div>
       <div>
-        <label className="block text-xs font-medium uppercase tracking-wide text-slate-400">
+        <label className="block text-xs font-medium uppercase tracking-wide text-muted">
           Password
         </label>
         <input
@@ -49,18 +49,18 @@ export default function LoginForm() {
           required
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="mt-1 block w-full rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-base text-slate-100 outline-none focus:ring-2 focus:ring-indigo-500/50"
+          className="mt-1 block w-full rounded-lg border border-line bg-white px-3 py-2 text-base text-ink outline-none focus:border-accent"
         />
       </div>
       {error && (
-        <p className="rounded-md bg-rose-500/10 px-3 py-2 text-sm text-rose-300">
+        <p className="rounded-md bg-loss/10 px-3 py-2 text-sm text-loss">
           {error}
         </p>
       )}
       <button
         type="submit"
         disabled={busy}
-        className="w-full rounded-lg bg-indigo-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-400 disabled:opacity-60"
+        className="w-full rounded-lg bg-ink px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60"
       >
         {busy ? "Signing in…" : "Sign in"}
       </button>

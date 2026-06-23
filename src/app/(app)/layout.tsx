@@ -20,10 +20,10 @@ export default async function AppLayout({
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <header className="safe-top sticky top-0 z-10 border-b border-[var(--border)] bg-[var(--background)]/85 backdrop-blur">
+      <header className="safe-top sticky top-0 z-10 border-b border-line bg-card/85 backdrop-blur">
         <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3">
-          <div className="flex items-center gap-2 font-semibold text-slate-100">
-            <div className="grid h-7 w-7 place-items-center rounded-md bg-indigo-500/20 text-xs font-bold text-indigo-300">
+          <div className="flex items-center gap-2 font-display font-semibold text-ink">
+            <div className="grid h-7 w-7 place-items-center rounded-md bg-ink text-xs font-bold text-white">
               T
             </div>
             Thor
@@ -38,6 +38,13 @@ export default async function AppLayout({
       >
         {children}
       </main>
+
+      <footer className="safe-bottom mx-auto w-full max-w-6xl px-4 pb-6 pt-2 text-xs text-muted">
+        Recommendations are paper-only and require your approval.{" "}
+        <a href="/about/regulatory-design" className="underline hover:text-ink">
+          Regulatory-design notes
+        </a>
+      </footer>
     </div>
   );
 }

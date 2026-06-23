@@ -16,7 +16,7 @@ import { formatCompactUsd, formatUsd } from "@/lib/format";
 export default function DrawdownCurve({ data }: { data: DrawdownPoint[] }) {
   if (data.length === 0)
     return (
-      <div className="grid h-[180px] place-items-center text-sm text-slate-500">
+      <div className="grid h-[180px] place-items-center text-sm text-muted">
         No data for the current filters.
       </div>
     );
@@ -27,21 +27,21 @@ export default function DrawdownCurve({ data }: { data: DrawdownPoint[] }) {
       <AreaChart data={series} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
         <defs>
           <linearGradient id="ddFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#f87171" stopOpacity={0} />
-            <stop offset="100%" stopColor="#f87171" stopOpacity={0.4} />
+            <stop offset="0%" stopColor="#e0413e" stopOpacity={0} />
+            <stop offset="100%" stopColor="#e0413e" stopOpacity={0.4} />
           </linearGradient>
         </defs>
-        <CartesianGrid stroke="#1e2a44" vertical={false} />
+        <CartesianGrid stroke="#e3e9f2" vertical={false} />
         <XAxis
           dataKey="i"
-          tick={{ fill: "#64748b", fontSize: 11 }}
+          tick={{ fill: "#5b6b82", fontSize: 11 }}
           tickLine={false}
-          axisLine={{ stroke: "#1e2a44" }}
+          axisLine={{ stroke: "#e3e9f2" }}
           tickFormatter={(i) => `#${i + 1}`}
           minTickGap={40}
         />
         <YAxis
-          tick={{ fill: "#64748b", fontSize: 11 }}
+          tick={{ fill: "#5b6b82", fontSize: 11 }}
           tickLine={false}
           axisLine={false}
           width={56}
@@ -55,7 +55,7 @@ export default function DrawdownCurve({ data }: { data: DrawdownPoint[] }) {
         <Area
           type="monotone"
           dataKey="drawdown"
-          stroke="#f87171"
+          stroke="#e0413e"
           strokeWidth={1.5}
           fill="url(#ddFill)"
         />
@@ -65,9 +65,9 @@ export default function DrawdownCurve({ data }: { data: DrawdownPoint[] }) {
 }
 
 const tooltipStyle = {
-  background: "#111a2e",
-  border: "1px solid #1e2a44",
+  background: "#ffffff",
+  border: "1px solid #e3e9f2",
   borderRadius: 8,
   fontSize: 12,
-  color: "#e2e8f0",
+  color: "#0f1a2e",
 };

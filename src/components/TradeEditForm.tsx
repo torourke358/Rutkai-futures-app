@@ -10,7 +10,12 @@ export interface TradeEditValues {
   rating: number | null;
   notes: string | null;
   risk_amount: number | null;
+  planned_stop_price: number | null;
+  planned_target_price: number | null;
 }
+
+const fieldClass =
+  "mt-1 block w-full rounded-lg border border-line bg-white px-3 py-2 text-ink ring-0 focus:border-accent";
 
 export default function TradeEditForm({ trade }: { trade: TradeEditValues }) {
   const [saved, setSaved] = useState(false);
@@ -26,16 +31,16 @@ export default function TradeEditForm({ trade }: { trade: TradeEditValues }) {
     >
       <input type="hidden" name="id" value={trade.id} />
       <div className="grid grid-cols-2 gap-3">
-        <label className="text-xs text-slate-400">
+        <label className="text-xs text-muted">
           Setup
           <input
             name="setup_tag"
             defaultValue={trade.setup_tag ?? ""}
             placeholder="e.g. breakout"
-            className="mt-1 block w-full rounded-lg bg-[var(--surface-2)] px-3 py-2 text-slate-100 ring-1 ring-[var(--border)]"
+            className={fieldClass}
           />
         </label>
-        <label className="text-xs text-slate-400">
+        <label className="text-xs text-muted">
           Rating (1–5)
           <input
             name="rating"
@@ -43,46 +48,67 @@ export default function TradeEditForm({ trade }: { trade: TradeEditValues }) {
             min={1}
             max={5}
             defaultValue={trade.rating ?? ""}
-            className="mt-1 block w-full rounded-lg bg-[var(--surface-2)] px-3 py-2 text-slate-100 ring-1 ring-[var(--border)]"
+            className={fieldClass}
           />
         </label>
-        <label className="col-span-2 text-xs text-slate-400">
+        <label className="text-xs text-muted">
+          Planned stop price
+          <input
+            name="planned_stop_price"
+            type="number"
+            step="any"
+            defaultValue={trade.planned_stop_price ?? ""}
+            placeholder="for R-multiple"
+            className={`${fieldClass} font-mono tabular-nums`}
+          />
+        </label>
+        <label className="text-xs text-muted">
+          Planned target price
+          <input
+            name="planned_target_price"
+            type="number"
+            step="any"
+            defaultValue={trade.planned_target_price ?? ""}
+            className={`${fieldClass} font-mono tabular-nums`}
+          />
+        </label>
+        <label className="col-span-2 text-xs text-muted">
           Tags (comma-separated)
           <input
             name="tags"
             defaultValue={(trade.tags ?? []).join(", ")}
             placeholder="news, fomc, revenge"
-            className="mt-1 block w-full rounded-lg bg-[var(--surface-2)] px-3 py-2 text-slate-100 ring-1 ring-[var(--border)]"
+            className={fieldClass}
           />
         </label>
-        <label className="col-span-2 text-xs text-slate-400">
+        <label className="col-span-2 text-xs text-muted">
           Risk override ($) — leave blank to use your risk model
           <input
             name="risk_amount"
             type="number"
             step="any"
             defaultValue={trade.risk_amount ?? ""}
-            className="mt-1 block w-full rounded-lg bg-[var(--surface-2)] px-3 py-2 text-slate-100 ring-1 ring-[var(--border)]"
+            className={`${fieldClass} font-mono tabular-nums`}
           />
         </label>
-        <label className="col-span-2 text-xs text-slate-400">
+        <label className="col-span-2 text-xs text-muted">
           Notes
           <textarea
             name="notes"
             rows={4}
             defaultValue={trade.notes ?? ""}
-            className="mt-1 block w-full rounded-lg bg-[var(--surface-2)] px-3 py-2 text-slate-100 ring-1 ring-[var(--border)]"
+            className={fieldClass}
           />
         </label>
       </div>
       <div className="flex items-center gap-3">
         <button
           type="submit"
-          className="rounded-xl bg-indigo-500 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-400"
+          className="rounded-xl bg-ink px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
         >
           Save
         </button>
-        {saved && <span className="text-xs text-emerald-300">Saved ✓</span>}
+        {saved && <span className="text-xs text-gain">Saved ✓</span>}
       </div>
     </form>
   );

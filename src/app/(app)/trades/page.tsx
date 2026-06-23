@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { annotateRisk, type RiskSettings, type CashFlow } from "@/lib/risk";
 import TradesTable, { type TradeRowView } from "@/components/TradesTable";
 import ManualTradeForm from "@/components/ManualTradeForm";
+import RecomputeButton from "@/components/RecomputeButton";
 
 export const dynamic = "force-dynamic";
 
@@ -69,10 +70,13 @@ export default async function TradesPage() {
 
   return (
     <div className="space-y-4 pb-8">
-      <h1 className="text-lg font-semibold text-slate-100">Trades</h1>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h1 className="font-display text-lg font-semibold text-ink">Trades</h1>
+        <RecomputeButton />
+      </div>
       <ManualTradeForm />
       {view.length === 0 ? (
-        <p className="rounded-2xl bg-[var(--surface)] p-6 text-center text-sm text-slate-400 ring-1 ring-[var(--border)]">
+        <p className="rounded-2xl bg-card p-6 text-center text-sm text-muted ring-1 ring-line">
           No trades yet. Import a CSV or add one manually above.
         </p>
       ) : (

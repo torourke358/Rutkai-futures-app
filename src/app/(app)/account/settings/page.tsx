@@ -51,7 +51,7 @@ export default async function SettingsPage() {
 
   return (
     <div className="space-y-6 pb-8">
-      <h1 className="text-lg font-semibold text-slate-100">Settings</h1>
+      <h1 className="text-lg font-semibold text-ink">Settings</h1>
 
       <Section
         title="Risk model"
@@ -65,46 +65,46 @@ export default async function SettingsPage() {
         subtitle="Only affects the auto-tracked-equity risk method. Positive = deposit, negative = withdrawal."
       >
         <form action={addCashFlow} className="flex flex-wrap items-end gap-2">
-          <label className="text-xs text-slate-400">
+          <label className="text-xs text-muted">
             Amount ($)
             <input
               type="number"
               name="amount"
               step="0.01"
               required
-              className="mt-1 block w-32 rounded-lg bg-[var(--surface-2)] px-3 py-2 text-slate-100 ring-1 ring-[var(--border)]"
+              className="mt-1 block w-32 rounded-lg bg-white px-3 py-2 text-ink border border-line focus:border-accent"
             />
           </label>
-          <label className="text-xs text-slate-400">
+          <label className="text-xs text-muted">
             Date
             <input
               type="date"
               name="occurred_at"
               required
-              className="mt-1 block rounded-lg bg-[var(--surface-2)] px-3 py-2 text-slate-100 ring-1 ring-[var(--border)]"
+              className="mt-1 block rounded-lg bg-white px-3 py-2 text-ink border border-line focus:border-accent"
             />
           </label>
-          <label className="text-xs text-slate-400">
+          <label className="text-xs text-muted">
             Note
             <input
               type="text"
               name="note"
-              className="mt-1 block rounded-lg bg-[var(--surface-2)] px-3 py-2 text-slate-100 ring-1 ring-[var(--border)]"
+              className="mt-1 block rounded-lg bg-white px-3 py-2 text-ink border border-line focus:border-accent"
             />
           </label>
           <button
             type="submit"
-            className="rounded-lg bg-indigo-500 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-400"
+            className="rounded-lg bg-ink px-3 py-2 text-sm font-semibold text-white hover:opacity-90"
           >
             Add
           </button>
         </form>
 
         {(flows ?? []).length > 0 && (
-          <ul className="mt-3 divide-y divide-[var(--border)] text-sm">
+          <ul className="mt-3 divide-y divide-line text-sm">
             {(flows ?? []).map((f) => (
               <li key={f.id} className="flex items-center justify-between py-2">
-                <span className="text-slate-300">
+                <span className="text-muted">
                   {formatDate(f.occurred_at)} · {formatUsd(f.amount)}
                   {f.note ? ` · ${f.note}` : ""}
                 </span>
@@ -112,7 +112,7 @@ export default async function SettingsPage() {
                   <input type="hidden" name="id" value={f.id} />
                   <button
                     type="submit"
-                    className="text-xs text-slate-500 hover:text-rose-300"
+                    className="text-xs text-muted hover:text-loss"
                   >
                     Remove
                   </button>
@@ -132,64 +132,64 @@ export default async function SettingsPage() {
             action={saveInstrumentSpec}
             className="mb-3 flex flex-wrap items-end gap-2"
           >
-            <label className="text-xs text-slate-400">
+            <label className="text-xs text-muted">
               Symbol
               <input
                 name="symbol"
                 required
-                className="mt-1 block w-24 rounded-lg bg-[var(--surface-2)] px-3 py-2 uppercase text-slate-100 ring-1 ring-[var(--border)]"
+                className="mt-1 block w-24 rounded-lg bg-white px-3 py-2 uppercase text-ink border border-line focus:border-accent"
               />
             </label>
-            <label className="text-xs text-slate-400">
+            <label className="text-xs text-muted">
               Point value ($)
               <input
                 type="number"
                 name="point_value"
                 step="0.01"
                 required
-                className="mt-1 block w-32 rounded-lg bg-[var(--surface-2)] px-3 py-2 text-slate-100 ring-1 ring-[var(--border)]"
+                className="mt-1 block w-32 rounded-lg bg-white px-3 py-2 text-ink border border-line focus:border-accent"
               />
             </label>
-            <label className="text-xs text-slate-400">
+            <label className="text-xs text-muted">
               Description
               <input
                 name="description"
-                className="mt-1 block rounded-lg bg-[var(--surface-2)] px-3 py-2 text-slate-100 ring-1 ring-[var(--border)]"
+                className="mt-1 block rounded-lg bg-white px-3 py-2 text-ink border border-line focus:border-accent"
               />
             </label>
             <button
               type="submit"
-              className="rounded-lg bg-indigo-500 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-400"
+              className="rounded-lg bg-ink px-3 py-2 text-sm font-semibold text-white hover:opacity-90"
             >
               Save
             </button>
           </form>
         )}
         {!isAdmin && (
-          <p className="mb-2 text-xs text-slate-500">
+          <p className="mb-2 text-xs text-muted">
             Read-only. Ask an admin to add a missing symbol (unknown symbols
             default to 1× until added).
           </p>
         )}
-        <div className="max-h-64 overflow-y-auto rounded-lg ring-1 ring-[var(--border)]">
+        <div className="max-h-64 overflow-y-auto rounded-lg ring-1 ring-line">
           <table className="w-full text-sm">
-            <thead className="sticky top-0 bg-[var(--surface-2)] text-xs uppercase text-slate-400">
+            <thead className="sticky top-0 bg-surface-2 text-xs uppercase text-muted">
               <tr>
                 <th className="px-3 py-2 text-left">Symbol</th>
                 <th className="px-3 py-2 text-right">Point value</th>
                 <th className="px-3 py-2 text-left">Description</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[var(--border)]">
+            <tbody className="divide-y divide-line">
               {(specs ?? []).map((s) => (
                 <tr key={s.symbol}>
-                  <td className="px-3 py-1.5 font-medium text-slate-100">
+                  <td className="px-3 py-1.5 font-medium text-ink">
                     {s.symbol}
                   </td>
-                  <td className="px-3 py-1.5 text-right tabular-nums text-slate-300">
+                  <td className="px-3 py-1.5 text-right tabular-nums text-muted">
                     {formatUsd(s.point_value)}
                   </td>
-                  <td className="px-3 py-1.5 text-slate-400">
+                  <td className="px-3 py-1.5 text-muted">
                     {s.description ?? "—"}
                   </td>
                 </tr>
@@ -212,9 +212,9 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-2xl bg-[var(--surface)] p-4 ring-1 ring-[var(--border)]">
-      <h2 className="text-sm font-semibold text-slate-100">{title}</h2>
-      <p className="mt-1 mb-3 text-xs text-slate-400">{subtitle}</p>
+    <section className="rounded-2xl bg-card p-4 ring-1 ring-line">
+      <h2 className="text-sm font-semibold text-ink">{title}</h2>
+      <p className="mt-1 mb-3 text-xs text-muted">{subtitle}</p>
       {children}
     </section>
   );

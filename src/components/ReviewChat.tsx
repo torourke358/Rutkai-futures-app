@@ -58,7 +58,7 @@ export default function ReviewChat({ initial }: { initial: QA[] }) {
             type="button"
             disabled={busy}
             onClick={() => ask(s)}
-            className="rounded-full bg-[var(--surface-2)] px-3 py-1.5 text-xs text-slate-300 ring-1 ring-[var(--border)] hover:text-slate-100 disabled:opacity-50"
+            className="rounded-full bg-surface-2 px-3 py-1.5 text-xs text-muted ring-1 ring-line hover:text-ink disabled:opacity-50"
           >
             {s}
           </button>
@@ -68,12 +68,12 @@ export default function ReviewChat({ initial }: { initial: QA[] }) {
       <div className="space-y-3">
         {history.map((m, i) => (
           <div key={i} className="space-y-2">
-            <div className="rounded-2xl rounded-tr-sm bg-indigo-500/15 px-4 py-2 text-sm text-indigo-100 ring-1 ring-indigo-400/20">
+            <div className="rounded-2xl rounded-tr-sm bg-surface-2 px-4 py-2 text-sm text-ink ring-1 ring-line">
               {m.question}
             </div>
-            <div className="rounded-2xl rounded-tl-sm bg-[var(--surface)] px-4 py-3 text-sm text-slate-200 ring-1 ring-[var(--border)]">
+            <div className="rounded-2xl rounded-tl-sm bg-card px-4 py-3 text-sm text-ink ring-1 ring-line">
               {m.pending ? (
-                <span className="text-slate-500">Analyzing your history…</span>
+                <span className="text-muted">Analyzing your history…</span>
               ) : (
                 <p className="whitespace-pre-wrap">{m.answer}</p>
               )}
@@ -83,7 +83,7 @@ export default function ReviewChat({ initial }: { initial: QA[] }) {
       </div>
 
       {error && (
-        <div className="rounded-xl bg-rose-500/10 p-3 text-sm text-rose-300 ring-1 ring-rose-500/30">
+        <div className="rounded-xl bg-loss/10 p-3 text-sm text-loss ring-1 ring-loss/30">
           {error}
         </div>
       )}
@@ -99,12 +99,12 @@ export default function ReviewChat({ initial }: { initial: QA[] }) {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Ask about your trading history…"
-          className="flex-1 rounded-xl bg-[var(--surface-2)] px-4 py-2.5 text-slate-100 ring-1 ring-[var(--border)]"
+          className="flex-1 rounded-xl bg-white border border-line px-4 py-2.5 text-ink ring-1 ring-line focus:border-accent"
         />
         <button
           type="submit"
           disabled={busy || !input.trim()}
-          className="rounded-xl bg-indigo-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-400 disabled:opacity-60"
+          className="rounded-xl bg-ink px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60"
         >
           {busy ? "…" : "Ask"}
         </button>

@@ -30,10 +30,10 @@ export default async function AuditPage() {
 
   return (
     <div className="space-y-4 pb-8">
-      <h1 className="text-lg font-semibold text-slate-100">Audit log</h1>
-      <div className="overflow-x-auto rounded-2xl bg-[var(--surface)] ring-1 ring-[var(--border)]">
+      <h1 className="text-lg font-semibold text-ink">Audit log</h1>
+      <div className="overflow-x-auto rounded-2xl bg-card ring-1 ring-line">
         <table className="w-full text-sm">
-          <thead className="bg-[var(--surface-2)] text-xs uppercase tracking-wide text-slate-400">
+          <thead className="bg-surface-2 text-xs uppercase tracking-wide text-muted">
             <tr>
               <th className="px-3 py-2 text-left">When</th>
               <th className="px-3 py-2 text-left">Action</th>
@@ -41,31 +41,31 @@ export default async function AuditPage() {
               <th className="px-3 py-2 text-left">Details</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[var(--border)]">
+          <tbody className="divide-y divide-line">
             {(rows ?? []).map((r) => (
-              <tr key={r.id} className="align-top hover:bg-[var(--surface-2)]">
-                <td className="whitespace-nowrap px-3 py-2 text-slate-400">
+              <tr key={r.id} className="align-top hover:bg-surface-2">
+                <td className="whitespace-nowrap px-3 py-2 text-muted">
                   {formatDateTime(r.created_at)}
                 </td>
                 <td className="px-3 py-2">
-                  <span className="rounded-full bg-slate-500/20 px-2 py-0.5 text-[10px] font-medium uppercase text-slate-300">
+                  <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[10px] font-medium uppercase text-muted">
                     {r.action}
                   </span>
                 </td>
-                <td className="px-3 py-2 text-slate-300">
+                <td className="px-3 py-2 text-muted">
                   {r.entity_type}
                   {r.entity_id ? (
-                    <span className="block text-[10px] text-slate-500">
+                    <span className="block text-[10px] text-muted">
                       {r.entity_id}
                     </span>
                   ) : null}
                 </td>
                 <td className="px-3 py-2">
                   <details>
-                    <summary className="cursor-pointer text-xs text-slate-400">
+                    <summary className="cursor-pointer text-xs text-muted">
                       view
                     </summary>
-                    <pre className="mt-1 max-w-md overflow-x-auto rounded-md bg-[var(--surface-2)] p-2 text-[10px] text-slate-400">
+                    <pre className="mt-1 max-w-md overflow-x-auto rounded-md bg-surface-2 p-2 text-[10px] text-muted">
                       {JSON.stringify(
                         { before: r.before_state, after: r.after_state },
                         null,
@@ -78,7 +78,7 @@ export default async function AuditPage() {
             ))}
             {(rows ?? []).length === 0 && (
               <tr>
-                <td colSpan={4} className="px-3 py-6 text-center text-slate-500">
+                <td colSpan={4} className="px-3 py-6 text-center text-muted">
                   No audit entries.
                 </td>
               </tr>

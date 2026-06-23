@@ -71,23 +71,23 @@ export default function TradesTable({ rows }: { rows: TradeRowView[] }) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Filter by symbol or setup…"
-          className="rounded-lg bg-[var(--surface-2)] px-3 py-1.5 text-sm text-slate-100 ring-1 ring-[var(--border)]"
+          className="rounded-lg bg-white border border-line px-3 py-1.5 text-sm text-ink ring-1 ring-line focus:border-accent"
         />
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value as "all" | "open" | "closed")}
-          className="rounded-lg bg-[var(--surface-2)] px-2 py-1.5 text-sm text-slate-100 ring-1 ring-[var(--border)]"
+          className="rounded-lg bg-white border border-line px-2 py-1.5 text-sm text-ink ring-1 ring-line focus:border-accent"
         >
           <option value="all">All</option>
           <option value="closed">Closed</option>
           <option value="open">Open</option>
         </select>
-        <span className="ml-auto text-xs text-slate-500">{view.length} trades</span>
+        <span className="ml-auto text-xs text-muted">{view.length} trades</span>
       </div>
 
-      <div className="overflow-x-auto rounded-2xl bg-[var(--surface)] ring-1 ring-[var(--border)]">
+      <div className="overflow-x-auto rounded-2xl bg-card ring-1 ring-line">
         <table className="w-full text-sm">
-          <thead className="bg-[var(--surface-2)] text-xs uppercase tracking-wide text-slate-400">
+          <thead className="bg-surface-2 text-xs uppercase tracking-wide text-muted">
             <tr>
               <Th onClick={() => toggleSort("symbol")} active={sort.key === "symbol"} dir={sort.dir}>Symbol</Th>
               <Th onClick={() => toggleSort("direction")} active={sort.key === "direction"} dir={sort.dir}>Side</Th>
@@ -102,11 +102,11 @@ export default function TradesTable({ rows }: { rows: TradeRowView[] }) {
               <th className="px-3 py-2 text-left">Status</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[var(--border)]">
+          <tbody className="divide-y divide-line">
             {view.map((r) => (
-              <tr key={r.id} className="hover:bg-[var(--surface-2)]">
-                <td className="px-3 py-2 font-semibold text-slate-100">
-                  <Link href={`/trades/${r.id}`} className="hover:text-indigo-300">
+              <tr key={r.id} className="hover:bg-surface-2">
+                <td className="px-3 py-2 font-semibold text-ink">
+                  <Link href={`/trades/${r.id}`} className="text-muted hover:text-ink">
                     {r.symbol}
                   </Link>
                 </td>
@@ -120,8 +120,8 @@ export default function TradesTable({ rows }: { rows: TradeRowView[] }) {
                 <td className={`px-3 py-2 text-right tabular-nums ${pnlToneClass(r.r)}`}>
                   {r.r == null ? "—" : `${r.r.toFixed(2)}R`}
                 </td>
-                <td className="px-3 py-2 text-slate-400">{formatDateTime(r.exit_at)}</td>
-                <td className="px-3 py-2 text-slate-400">{r.setup_tag ?? "—"}</td>
+                <td className="px-3 py-2 text-muted">{formatDateTime(r.exit_at)}</td>
+                <td className="px-3 py-2 text-muted">{r.setup_tag ?? "—"}</td>
                 <td className="px-3 py-2">
                   <NoteCell id={r.id} initial={r.notes} />
                 </td>
@@ -129,8 +129,8 @@ export default function TradesTable({ rows }: { rows: TradeRowView[] }) {
                   <span
                     className={`rounded-full px-2 py-0.5 text-[10px] font-medium uppercase ${
                       r.status === "closed"
-                        ? "bg-slate-500/20 text-slate-300"
-                        : "bg-amber-500/20 text-amber-300"
+                        ? "bg-surface-2 text-muted"
+                        : "bg-short/20 text-short"
                     }`}
                   >
                     {r.status}
@@ -163,7 +163,7 @@ function Th({
       <button
         type="button"
         onClick={onClick}
-        className={`inline-flex items-center gap-1 ${active ? "text-slate-100" : ""}`}
+        className={`inline-flex items-center gap-1 ${active ? "text-ink" : ""}`}
       >
         {children}
         {active && <span>{dir === 1 ? "▲" : "▼"}</span>}
@@ -182,10 +182,10 @@ function NoteCell({ id, initial }: { id: string; initial: string | null }) {
       <button
         type="button"
         onClick={() => setEditing(true)}
-        className="max-w-[12rem] truncate text-left text-slate-400 hover:text-slate-200"
+        className="max-w-[12rem] truncate text-left text-muted hover:text-ink"
         title={value || "Add note"}
       >
-        {value || <span className="text-slate-600">add note…</span>}
+        {value || <span className="text-muted">add note…</span>}
       </button>
     );
   }
@@ -202,7 +202,7 @@ function NoteCell({ id, initial }: { id: string; initial: string | null }) {
         setEditing(false);
       }}
       rows={2}
-      className="w-48 rounded-md bg-[var(--surface-2)] px-2 py-1 text-xs text-slate-100 ring-1 ring-[var(--border)]"
+      className="w-48 rounded-md bg-white border border-line px-2 py-1 text-xs text-ink ring-1 ring-line focus:border-accent"
     />
   );
 }

@@ -6,7 +6,7 @@ import { formatSignedUsd } from "@/lib/format";
 export default function PnlCalendar({ days }: { days: CalendarDay[] }) {
   if (days.length === 0)
     return (
-      <div className="grid h-24 place-items-center text-sm text-slate-500">
+      <div className="grid h-24 place-items-center text-sm text-muted">
         No trading days for the current filters.
       </div>
     );
@@ -52,17 +52,17 @@ export default function PnlCalendar({ days }: { days: CalendarDay[] }) {
           </div>
         ))}
       </div>
-      <div className="flex items-center gap-3 text-[10px] text-slate-500">
+      <div className="flex items-center gap-3 text-[10px] text-muted">
         <span className="flex items-center gap-1">
-          <span className="h-3 w-3 rounded-sm" style={{ backgroundColor: "rgba(248,113,113,0.85)" }} />
+          <span className="h-3 w-3 rounded-sm" style={{ backgroundColor: "rgba(224,65,62,0.85)" }} />
           loss
         </span>
         <span className="flex items-center gap-1">
-          <span className="h-3 w-3 rounded-sm" style={{ backgroundColor: "#1a2440" }} />
+          <span className="h-3 w-3 rounded-sm" style={{ backgroundColor: "#f6f8fc" }} />
           no trades
         </span>
         <span className="flex items-center gap-1">
-          <span className="h-3 w-3 rounded-sm" style={{ backgroundColor: "rgba(52,211,153,0.85)" }} />
+          <span className="h-3 w-3 rounded-sm" style={{ backgroundColor: "rgba(21,166,106,0.85)" }} />
           profit
         </span>
       </div>
@@ -71,12 +71,12 @@ export default function PnlCalendar({ days }: { days: CalendarDay[] }) {
 }
 
 function cellColor(day: CalendarDay | undefined, maxAbs: number): string {
-  if (!day || day.tradeCount === 0) return "#1a2440";
-  if (day.netPnl === 0) return "#334155";
+  if (!day || day.tradeCount === 0) return "#f6f8fc";
+  if (day.netPnl === 0) return "#e3e9f2";
   const intensity = 0.25 + 0.75 * Math.min(Math.abs(day.netPnl) / maxAbs, 1);
   return day.netPnl > 0
-    ? `rgba(52,211,153,${intensity.toFixed(2)})`
-    : `rgba(248,113,113,${intensity.toFixed(2)})`;
+    ? `rgba(21,166,106,${intensity.toFixed(2)})`
+    : `rgba(224,65,62,${intensity.toFixed(2)})`;
 }
 
 function parseKey(s: string): Date {

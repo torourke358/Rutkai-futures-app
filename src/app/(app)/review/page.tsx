@@ -26,8 +26,8 @@ export default async function ReviewPage() {
   return (
     <div className="space-y-4 pb-8">
       <div>
-        <h1 className="text-lg font-semibold text-slate-100">AI Review</h1>
-        <p className="mt-1 text-xs text-slate-400">
+        <h1 className="text-lg font-semibold text-ink">AI Review</h1>
+        <p className="mt-1 text-xs text-muted">
           Ask plain-English questions about your trading history. Answers come
           only from your own closed-trade data — this tool never predicts or
           recommends trades.

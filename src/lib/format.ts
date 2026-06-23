@@ -23,10 +23,10 @@ export function formatSignedUsd(n: number | null | undefined): string {
 }
 
 export function pnlToneClass(n: number | null | undefined): string {
-  if (n == null) return "text-slate-400";
-  if (n > 0) return "text-emerald-400";
-  if (n < 0) return "text-rose-400";
-  return "text-slate-400";
+  if (n == null) return "text-muted";
+  if (n > 0) return "text-gain";
+  if (n < 0) return "text-loss";
+  return "text-muted";
 }
 
 const COMPACT_FMT = new Intl.NumberFormat("en-US", {

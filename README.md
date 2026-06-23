@@ -1,11 +1,17 @@
-# Thor — Trade Journal (Phase 1)
+# Thor — Futures Journal & Recommendation Engine
 
-A trade-journal + analytics PWA for Craig Crutkai. Replaces TradeTracker Pro.
-Reads CSV exports (NinjaTrader 8 Executions), pairs fills into closed
-round-trip trades, and surfaces analytics + Claude-powered Q&A over the
-trader's own history.
+A trade-journal + analytics PWA for Craig Crutkai, plus a **paper-only,
+human-gated** futures recommendation engine (Phase 3). Reads CSV exports
+(NinjaTrader 8 Executions + OHLCV bars), pairs fills into closed round-trip
+trades, and surfaces MAE/MFE analytics + Claude-powered descriptive Q&A over
+the trader's own history.
 
-This app does NOT place, modify, or recommend trades. Read-only journal.
+The engine proposes per-trade candidates from the owner's configured strategy;
+nothing reaches even the paper account without an explicit per-trade **Approve**.
+There is **no live broker connection and no live-money routing** anywhere
+(`LIVE_EXECUTION_ENABLED = false`). No performance/profit claims; simulated
+figures carry a hypothetical-results disclaimer. See
+`/about/regulatory-design`.
 
 ## Status
 
@@ -30,11 +36,47 @@ end-to-end:
 - Trades: dense sortable/filterable table, inline notes, trade detail page with
   setup/tags/rating/notes/risk-override editing
 - AI review: `/api/ask` summarizes history server-side and calls Claude
-  (`claude-opus-4-8`), chat panel with suggested questions
+  (`claude-sonnet-4-6`), with a prescriptive-language lint that regenerates once
+  then falls back to raw metrics; chat panel with suggested questions
 - PWA (manifest, SVG icons, conservative service worker) + admin audit viewer
-- Auth (Supabase SSR, three-client split, proxy refresh), dark app shell
+- Auth (Supabase SSR, three-client split, proxy refresh)
 
-Run `npm test` (pairing + risk + analytics) and `npm run build` to verify.
+### Phase 3 — regulated engine (paper-only, human-gated)
+
+- Schema — `03_thor_regulated_engine.sql` (instruments, bars, strategy_configs,
+  trade_candidates, trade_decisions, paper_trades; MAE/MFE columns on trades;
+  widened `audit_log.action`). **Generate-only — apply it manually.**
+- MAE/MFE/R-multiple engine over imported bars + candlestick drilldown with
+  entry/exit/MAE/MFE markers and stop/target lines (`src/lib/analytics/excursion.ts`,
+  `src/components/charts/CandleChart.tsx`)
+- Generic risk/sizing/exit template + session guardrails (`src/lib/engine/riskTemplate.ts`)
+- Pluggable `EntryStrategy` interface + one labeled placeholder
+  (`example_ma_cross` — EXAMPLE ONLY, not an edge)
+- `BrokerAdapter` with only `SimBrokerAdapter` implemented; `LiveBrokerAdapter`
+  unimplemented behind `LIVE_EXECUTION_ENABLED = false`
+- Engine page: generate → **trade ticket** (signature approval card with price
+  ladder) → Approve → simulated `paper_trade`, all audited
+  (`src/app/(app)/engine`, `src/components/TradeTicket.tsx`)
+- Light "instrument panel" theme app-wide; `/about/regulatory-design` for counsel
+
+### Phase 4 — what-if sweep + money-math refactor
+
+- **Integer money math** (`src/lib/money.ts`): all P&L/price math is integer
+  cents/ticks with one half-away-from-zero rounding rule — no raw-float drift.
+  Applied to the MAE/MFE engine, the risk template, and the sim fill.
+- **What-if sweep** (`src/lib/analysis/whatif.ts`): a pure, deterministic,
+  bit-for-bit reproducible counterfactual that re-runs EVERY selected past trade
+  under a different parameter (stop distance / exit rule / target R), modelling
+  rescued winners AND deepened losers (no survivorship bias). UI at `/whatif`.
+- **Two-role AI**: the model only maps a question → params (`src/lib/ai/params.ts`,
+  with a deterministic offline fallback) and narrates already-computed results
+  (`src/lib/ai/narrate.ts`), behind the prescriptive-language lint. It never
+  originates a figure or computes P&L.
+- Schema — `04_thor_whatif.sql` (`whatif_runs`, integer-cent aggregates).
+  **Generate-only — apply it manually.**
+
+Run `npm test` (pairing, risk, analytics, excursion, lint, risk template, sim
+fill, money, what-if — 78 tests) and `npm run build` to verify.
 
 ## Set up
 
@@ -44,14 +86,14 @@ npm install
 
 # 2. Create a NEW Supabase project (separate from yacht-ops + petty-cash).
 #    Run 01_trade_journal_schema.sql, then 02_trade_journal_phase2.sql,
-#    in the SQL Editor.
+#    then 03_thor_regulated_engine.sql, then 04_thor_whatif.sql, in the SQL Editor.
 
 # 3. Copy .env.example → .env.local and fill in:
 #    - NEXT_PUBLIC_SUPABASE_URL
 #    - NEXT_PUBLIC_SUPABASE_ANON_KEY
 #    - SUPABASE_SERVICE_ROLE_KEY  (server only — never commit)
 #    - ANTHROPIC_API_KEY          (server only — never commit)
-#    - CLAUDE_MODEL=claude-opus-4-8
+#    - CLAUDE_MODEL=claude-sonnet-4-6
 
 # 4. Provision the first user via Supabase Auth dashboard (no public signup).
 #    Sign-in form is at /login.
@@ -76,8 +118,16 @@ npm test
 - **Claude API is server-side only.** `/api/ask` will summarize the user's
   history server-side before calling Anthropic; the API key never reaches
   the browser.
-- **Dark theme by default.** Calm slate background, indigo single accent,
-  emerald/rose for P&L. Min 16px inputs to stop iOS zoom.
+- **Light "instrument panel" theme.** Quiet light surfaces; color is reserved
+  to carry meaning — `--gain`/`--loss` for money, `--long`/`--short` for
+  direction, and `--accent` (indigo) used ONLY for the Approve button. Min 16px
+  inputs to stop iOS zoom; visible focus + reduced-motion respected.
+- **Paper-only broker boundary.** `BrokerAdapter` defines the contract; only
+  `SimBrokerAdapter` is implemented (fills approved candidates against imported
+  bars). `LiveBrokerAdapter` is intentionally unimplemented behind
+  `LIVE_EXECUTION_ENABLED = false` with its preconditions documented in code.
+- **Engine proposes; the human approves.** Candidate generation is always
+  user-triggered; the per-trade Approve gate is the one place `--accent` appears.
 
 ## Phase 1 acceptance checklist
 

@@ -1,24 +1,66 @@
 @import "tailwindcss";
 
-:root {
-  /* Dark trading-app theme by default — calm neutrals with one accent. */
-  --background: #0b1220;       /* deep slate */
-  --foreground: #e2e8f0;       /* slate-200 */
-  --surface: #111a2e;          /* slate-900-ish raised cards */
-  --surface-2: #1a2440;        /* slate-800-ish hover / chips */
-  --border: #1e2a44;
-  --accent: #818cf8;           /* indigo-400 — the one accent */
-  --pos: #34d399;              /* emerald-400 — profit */
-  --neg: #f87171;              /* rose-400 — loss */
+/*
+  Thor — light "instrument panel" token system.
 
-  color-scheme: dark;
+  Surfaces are light and quiet; color is RESERVED to carry meaning — money,
+  trade direction, and the single Approve action — so the eye goes straight to
+  the numbers and the decision. This replaces the earlier dark-terminal theme
+  app-wide. Do not reintroduce a dark default.
+*/
+:root {
+  --ink: #0f1a2e;       /* structure, primary text */
+  --surface: #f6f8fc;   /* app background */
+  --card: #ffffff;      /* raised cards */
+  --line: #e3e9f2;      /* hairlines / borders */
+  --muted: #5b6b82;     /* secondary text */
+
+  /* Semantic — money */
+  --gain: #15a66a;
+  --loss: #e0413e;
+
+  /* Semantic — direction. Deliberately different hues from gain/loss so a
+     long/short marker is never confused with P&L. */
+  --long: #2563eb;      /* azure */
+  --short: #e08a1e;     /* amber */
+
+  /* The one confident control on the screen: used ONLY for the primary action
+     (Approve). Nothing decorative may use it. */
+  --accent: #5b5bf0;    /* indigo */
+
+  /* Back-compat aliases for components authored against the old dark names.
+     They now resolve to LIGHT values, so a bare variable swap re-themes them. */
+  --background: var(--surface);
+  --foreground: var(--ink);
+  --surface-2: #eef2f9; /* subtle hover / chips */
+  --border: var(--line);
+  --pos: var(--gain);
+  --neg: var(--loss);
+
+  color-scheme: light;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Color utilities: bg-card, text-ink, text-muted, border-line, text-gain,
+     text-loss, text-long, text-short, text-accent, bg-accent, … */
+  --color-background: var(--surface);
+  --color-foreground: var(--ink);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-card: var(--card);
+  --color-line: var(--line);
+  --color-muted: var(--muted);
+  --color-ink: var(--ink);
+  --color-gain: var(--gain);
+  --color-loss: var(--loss);
+  --color-long: var(--long);
+  --color-short: var(--short);
+  --color-accent: var(--accent);
+
+  /* Display / body / tabular-numeric type. */
+  --font-display: var(--font-space-grotesk);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains-mono);
 }
 
 html {
@@ -26,8 +68,8 @@ html {
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--surface);
+  color: var(--ink);
   font-family: var(--font-sans), system-ui, sans-serif;
   -webkit-text-size-adjust: 100%;
   overscroll-behavior-y: none;
@@ -39,6 +81,7 @@ body {
 
 input,
 textarea,
+select,
 [contenteditable="true"] {
   -webkit-user-select: text;
   user-select: text;
@@ -54,6 +97,19 @@ select {
   touch-action: manipulation;
 }
 
+/* Visible keyboard focus everywhere (a11y floor). */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Prices and tables: copyable, even though the app shell suppresses selection. */
+.tabular,
+table {
+  font-variant-numeric: tabular-nums;
+}
+
 .safe-bottom {
   padding-bottom: env(safe-area-inset-bottom);
 }
@@ -64,5 +120,17 @@ select {
 @media (display-mode: standalone) {
   body {
     overflow-x: hidden;
+  }
+}
+
+/* Respect reduced-motion: kill transitions/animations for users who ask. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

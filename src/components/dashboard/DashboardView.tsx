@@ -91,17 +91,17 @@ export default function DashboardView({
     { label: "Profit factor", value: stats.profitFactor == null ? "∞" : stats.profitFactor.toFixed(2) },
     { label: "Expectancy", value: formatSignedUsd(stats.expectancy), tone: pnlToneClass(stats.expectancy) },
     { label: "Expectancy (R)", value: stats.avgR == null ? "—" : `${stats.avgR.toFixed(2)}R`, tone: stats.avgR == null ? undefined : pnlToneClass(stats.avgR) },
-    { label: "Avg win", value: formatUsd(stats.avgWin), tone: "text-emerald-300" },
-    { label: "Avg loss", value: formatUsd(stats.avgLoss), tone: "text-rose-300" },
+    { label: "Avg win", value: formatUsd(stats.avgWin), tone: "text-gain" },
+    { label: "Avg loss", value: formatUsd(stats.avgLoss), tone: "text-loss" },
     { label: "Payoff ratio", value: stats.payoffRatio == null ? "—" : stats.payoffRatio.toFixed(2) },
-    { label: "Max drawdown", value: formatUsd(stats.maxDrawdown), tone: "text-rose-300" },
-    { label: "Largest win", value: formatUsd(stats.largestWin), tone: "text-emerald-300" },
-    { label: "Largest loss", value: formatUsd(Math.abs(stats.largestLoss)), tone: "text-rose-300" },
+    { label: "Max drawdown", value: formatUsd(stats.maxDrawdown), tone: "text-loss" },
+    { label: "Largest win", value: formatUsd(stats.largestWin), tone: "text-gain" },
+    { label: "Largest loss", value: formatUsd(Math.abs(stats.largestLoss)), tone: "text-loss" },
     { label: "Win streak", value: `${stats.maxConsecWins}` },
     { label: "Loss streak", value: `${stats.maxConsecLosses}` },
     { label: "Trades", value: `${stats.wins + stats.losses + stats.breakEvens}` },
     { label: "Win / loss days", value: `${stats.winningDays} / ${stats.losingDays}` },
-    { label: "Total fees", value: formatUsd(stats.fees), tone: "text-slate-400" },
+    { label: "Total fees", value: formatUsd(stats.fees), tone: "text-muted" },
   ];
 
   const hasFilters =
@@ -110,7 +110,7 @@ export default function DashboardView({
   return (
     <div className="space-y-5 pb-8">
       {/* Filters */}
-      <div className="flex flex-wrap items-end gap-2 rounded-2xl bg-[var(--surface)] p-3 ring-1 ring-[var(--border)]">
+      <div className="flex flex-wrap items-end gap-2 rounded-2xl bg-card p-3 ring-1 ring-line">
         <FilterDate
           label="From"
           value={filters.from}
@@ -143,7 +143,7 @@ export default function DashboardView({
           <button
             type="button"
             onClick={() => setFilters(EMPTY)}
-            className="ml-auto rounded-lg px-2.5 py-1.5 text-xs text-slate-400 hover:text-slate-100"
+            className="ml-auto rounded-lg px-2.5 py-1.5 text-xs text-muted hover:text-ink"
           >
             Reset
           </button>
@@ -155,12 +155,12 @@ export default function DashboardView({
         {cards.map((c) => (
           <div
             key={c.label}
-            className="rounded-xl bg-[var(--surface)] p-3 ring-1 ring-[var(--border)]"
+            className="rounded-xl bg-card p-3 ring-1 ring-line"
           >
-            <p className="text-[10px] font-medium uppercase tracking-wide text-slate-500">
+            <p className="text-[10px] font-medium uppercase tracking-wide text-muted">
               {c.label}
             </p>
-            <p className={`mt-1 text-lg font-semibold tabular-nums ${c.tone ?? "text-slate-100"}`}>
+            <p className={`mt-1 text-lg font-semibold tabular-nums ${c.tone ?? "text-ink"}`}>
               {c.value}
             </p>
           </div>
@@ -168,23 +168,23 @@ export default function DashboardView({
       </div>
 
       {/* Equity + drawdown */}
-      <section className="rounded-2xl bg-[var(--surface)] p-4 ring-1 ring-[var(--border)]">
-        <h2 className="mb-2 text-sm font-semibold text-slate-100">Equity curve</h2>
+      <section className="rounded-2xl bg-card p-4 ring-1 ring-line">
+        <h2 className="mb-2 text-sm font-semibold text-ink">Equity curve</h2>
         <EquityCurve data={equity} />
-        <h2 className="mb-2 mt-4 text-sm font-semibold text-slate-100">Drawdown</h2>
+        <h2 className="mb-2 mt-4 text-sm font-semibold text-ink">Drawdown</h2>
         <DrawdownCurve data={drawdown} />
       </section>
 
       {/* R distribution + calendar */}
       <div className="grid gap-3 lg:grid-cols-2">
-        <section className="rounded-2xl bg-[var(--surface)] p-4 ring-1 ring-[var(--border)]">
-          <h2 className="mb-2 text-sm font-semibold text-slate-100">
+        <section className="rounded-2xl bg-card p-4 ring-1 ring-line">
+          <h2 className="mb-2 text-sm font-semibold text-ink">
             R-multiple distribution
           </h2>
           <RDistribution data={rdist} />
         </section>
-        <section className="rounded-2xl bg-[var(--surface)] p-4 ring-1 ring-[var(--border)]">
-          <h2 className="mb-2 text-sm font-semibold text-slate-100">
+        <section className="rounded-2xl bg-card p-4 ring-1 ring-line">
+          <h2 className="mb-2 text-sm font-semibold text-ink">
             P&amp;L calendar
           </h2>
           <PnlCalendar days={calendar} />
@@ -212,13 +212,13 @@ function FilterDate({
   onChange: (v: string) => void;
 }) {
   return (
-    <label className="text-[10px] uppercase tracking-wide text-slate-500">
+    <label className="text-[10px] uppercase tracking-wide text-muted">
       {label}
       <input
         type="date"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-0.5 block rounded-lg bg-[var(--surface-2)] px-2 py-1.5 text-sm text-slate-100 ring-1 ring-[var(--border)]"
+        className="mt-0.5 block rounded-lg bg-white border border-line px-2 py-1.5 text-sm text-ink ring-1 ring-line"
       />
     </label>
   );
@@ -236,12 +236,12 @@ function FilterSelect({
   options: string[];
 }) {
   return (
-    <label className="text-[10px] uppercase tracking-wide text-slate-500">
+    <label className="text-[10px] uppercase tracking-wide text-muted">
       {label}
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-0.5 block rounded-lg bg-[var(--surface-2)] px-2 py-1.5 text-sm text-slate-100 ring-1 ring-[var(--border)]"
+        className="mt-0.5 block rounded-lg bg-white border border-line px-2 py-1.5 text-sm text-ink ring-1 ring-line"
       >
         <option value="">All</option>
         {options.map((o) => (

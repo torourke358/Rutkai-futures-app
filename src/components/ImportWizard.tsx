@@ -137,16 +137,16 @@ export default function ImportWizard({
           if (f) void onFile(f);
         }}
         onClick={() => fileInput.current?.click()}
-        className="cursor-pointer rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface)] p-8 text-center hover:border-indigo-400/50"
+        className="cursor-pointer rounded-2xl border border-dashed border-line bg-card p-8 text-center hover:border-accent"
       >
-        <p className="text-sm text-slate-300">
+        <p className="text-sm text-muted">
           {fileName ? (
-            <span className="font-medium text-slate-100">{fileName}</span>
+            <span className="font-medium text-ink">{fileName}</span>
           ) : (
             "Drag a NinjaTrader 8 Executions CSV here, or click to choose"
           )}
         </p>
-        <p className="mt-1 text-xs text-slate-500">
+        <p className="mt-1 text-xs text-muted">
           {fileName ? "Click to choose a different file" : ".csv exported from the Trade Performance window"}
         </p>
         <input
@@ -162,24 +162,24 @@ export default function ImportWizard({
       </div>
 
       {error && (
-        <div className="rounded-xl bg-rose-500/10 p-3 text-sm text-rose-300 ring-1 ring-rose-500/30">
+        <div className="rounded-xl bg-loss/10 p-3 text-sm text-loss ring-1 ring-loss/30">
           {error}
         </div>
       )}
 
       {/* Column mapping */}
       {result && phase !== "done" && (
-        <section className="rounded-2xl bg-[var(--surface)] p-4 ring-1 ring-[var(--border)] space-y-3">
-          <h2 className="text-sm font-semibold text-slate-100">Column mapping</h2>
+        <section className="rounded-2xl bg-card p-4 ring-1 ring-line space-y-3">
+          <h2 className="text-sm font-semibold text-ink">Column mapping</h2>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {FIELDS.map((f) => (
-              <label key={f.key} className="block text-xs text-slate-400">
+              <label key={f.key} className="block text-xs text-muted">
                 {f.label}
-                {f.optional && <span className="text-slate-600"> (optional)</span>}
+                {f.optional && <span className="text-muted"> (optional)</span>}
                 <select
                   value={(mapping[f.key] as string) ?? ""}
                   onChange={(e) => updateMapping(f.key, e.target.value)}
-                  className="mt-1 w-full rounded-lg bg-[var(--surface-2)] px-2 py-1.5 text-slate-100 ring-1 ring-[var(--border)]"
+                  className="mt-1 w-full rounded-lg bg-white border border-line px-2 py-1.5 text-ink ring-1 ring-line focus:border-accent"
                 >
                   {f.optional && <option value="">— none —</option>}
                   {detected.map((c) => (
@@ -200,11 +200,11 @@ export default function ImportWizard({
           </div>
 
           <div className="flex flex-wrap items-center gap-3 pt-1 text-xs">
-            <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-emerald-300">
+            <span className="rounded-full bg-gain/15 px-2 py-0.5 text-gain">
               {validCount} valid rows
             </span>
             {errorCount > 0 && (
-              <span className="rounded-full bg-rose-500/15 px-2 py-0.5 text-rose-300">
+              <span className="rounded-full bg-loss/15 px-2 py-0.5 text-loss">
                 {errorCount} skipped
               </span>
             )}
@@ -214,10 +214,10 @@ export default function ImportWizard({
 
       {/* Preview */}
       {result && validCount > 0 && phase !== "done" && (
-        <section className="rounded-2xl bg-[var(--surface)] ring-1 ring-[var(--border)] overflow-hidden">
+        <section className="rounded-2xl bg-card ring-1 ring-line overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
-              <thead className="bg-[var(--surface-2)] uppercase tracking-wide text-slate-400">
+              <thead className="bg-surface-2 uppercase tracking-wide text-muted">
                 <tr>
                   <th className="px-3 py-2 text-left">Symbol</th>
                   <th className="px-3 py-2 text-left">Side</th>
@@ -227,15 +227,15 @@ export default function ImportWizard({
                   <th className="px-3 py-2 text-left">Executed</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[var(--border)]">
+              <tbody className="divide-y divide-line">
                 {result.rows.slice(0, 25).map((r, i) => (
                   <tr key={i}>
-                    <td className="px-3 py-1.5 font-medium text-slate-100">{r.symbol}</td>
+                    <td className="px-3 py-1.5 font-medium text-ink">{r.symbol}</td>
                     <td className="px-3 py-1.5">{r.side}</td>
                     <td className="px-3 py-1.5 text-right tabular-nums">{r.quantity}</td>
                     <td className="px-3 py-1.5 text-right tabular-nums">{r.price}</td>
                     <td className="px-3 py-1.5 text-right tabular-nums">{r.fees}</td>
-                    <td className="px-3 py-1.5 text-slate-400">
+                    <td className="px-3 py-1.5 text-muted">
                       {new Date(r.executed_at).toLocaleString()}
                     </td>
                   </tr>
@@ -244,7 +244,7 @@ export default function ImportWizard({
             </table>
           </div>
           {validCount > 25 && (
-            <p className="px-3 py-2 text-xs text-slate-500">
+            <p className="px-3 py-2 text-xs text-muted">
               …and {validCount - 25} more rows
             </p>
           )}
@@ -253,11 +253,11 @@ export default function ImportWizard({
 
       {/* Error rows */}
       {result && errorCount > 0 && phase !== "done" && (
-        <details className="rounded-2xl bg-[var(--surface)] p-4 ring-1 ring-[var(--border)]">
-          <summary className="cursor-pointer text-sm text-slate-300">
+        <details className="rounded-2xl bg-card p-4 ring-1 ring-line">
+          <summary className="cursor-pointer text-sm text-muted">
             {errorCount} skipped rows
           </summary>
-          <ul className="mt-2 space-y-1 text-xs text-slate-400">
+          <ul className="mt-2 space-y-1 text-xs text-muted">
             {result.errors.slice(0, 50).map((e, i) => (
               <li key={i}>
                 Row {e.rowNumber}: {e.reason}
@@ -273,7 +273,7 @@ export default function ImportWizard({
           type="button"
           onClick={confirmImport}
           disabled={phase === "uploading"}
-          className="rounded-xl bg-indigo-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-400 disabled:opacity-60"
+          className="rounded-xl bg-ink px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60"
         >
           {phase === "uploading"
             ? "Importing…"
@@ -283,8 +283,8 @@ export default function ImportWizard({
 
       {/* Done */}
       {phase === "done" && summary && (
-        <section className="rounded-2xl bg-emerald-500/10 p-4 ring-1 ring-emerald-500/30 space-y-3">
-          <p className="text-sm text-emerald-200">
+        <section className="rounded-2xl bg-gain/10 p-4 ring-1 ring-gain/30 space-y-3">
+          <p className="text-sm text-gain">
             Imported {summary.executions} executions → {summary.closed} closed
             trades, {summary.open} open.
           </p>
@@ -292,14 +292,14 @@ export default function ImportWizard({
             <button
               type="button"
               onClick={() => router.push("/dashboard")}
-              className="rounded-lg bg-indigo-500 px-3 py-1.5 text-sm font-semibold text-white hover:bg-indigo-400"
+              className="rounded-lg bg-ink px-3 py-1.5 text-sm font-semibold text-white hover:opacity-90"
             >
               View dashboard
             </button>
             <button
               type="button"
               onClick={undo}
-              className="rounded-lg px-3 py-1.5 text-sm text-slate-400 hover:text-rose-300"
+              className="rounded-lg px-3 py-1.5 text-sm text-muted hover:text-loss"
             >
               Undo this import
             </button>

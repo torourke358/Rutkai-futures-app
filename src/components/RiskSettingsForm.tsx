@@ -52,8 +52,8 @@ export default function RiskSettingsForm({
             key={m.value}
             className={`flex cursor-pointer gap-3 rounded-xl p-3 ring-1 ${
               method === m.value
-                ? "bg-indigo-500/10 ring-indigo-400/40"
-                : "bg-[var(--surface-2)] ring-[var(--border)]"
+                ? "bg-surface-2 ring-ink"
+                : "bg-surface-2 ring-line"
             }`}
           >
             <input
@@ -64,10 +64,10 @@ export default function RiskSettingsForm({
               className="mt-1"
             />
             <span>
-              <span className="block text-sm font-medium text-slate-100">
+              <span className="block text-sm font-medium text-ink">
                 {m.label}
               </span>
-              <span className="block text-xs text-slate-400">{m.blurb}</span>
+              <span className="block text-xs text-muted">{m.blurb}</span>
             </span>
           </label>
         ))}
@@ -114,16 +114,16 @@ export default function RiskSettingsForm({
             defaultValue={initial?.risk_percent ?? 1}
             step="0.05"
           />
-          <label className="col-span-2 block text-xs text-slate-400">
+          <label className="col-span-2 block text-xs text-muted">
             Start date
             <input
               type="date"
               name="starting_at"
               defaultValue={startingDate}
-              className="mt-1 w-full rounded-lg bg-[var(--surface-2)] px-3 py-2 text-slate-100 ring-1 ring-[var(--border)]"
+              className="mt-1 w-full rounded-lg bg-white px-3 py-2 text-ink border border-line focus:border-accent"
             />
           </label>
-          <p className="col-span-2 text-xs text-slate-500">
+          <p className="col-span-2 text-xs text-muted">
             Log deposits and withdrawals below so equity stays accurate.
           </p>
         </div>
@@ -132,11 +132,11 @@ export default function RiskSettingsForm({
       <div className="flex items-center gap-3">
         <button
           type="submit"
-          className="rounded-xl bg-indigo-500 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-400"
+          className="rounded-xl bg-ink px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
         >
           Save risk settings
         </button>
-        {saved && <span className="text-xs text-emerald-300">Saved ✓</span>}
+        {saved && <span className="text-xs text-gain">Saved ✓</span>}
       </div>
     </form>
   );
@@ -154,14 +154,14 @@ function Field({
   step: string;
 }) {
   return (
-    <label className="block text-xs text-slate-400">
+    <label className="block text-xs text-muted">
       {label}
       <input
         type="number"
         name={name}
         step={step}
         defaultValue={defaultValue}
-        className="mt-1 w-full rounded-lg bg-[var(--surface-2)] px-3 py-2 text-slate-100 ring-1 ring-[var(--border)]"
+        className="mt-1 w-full rounded-lg bg-white px-3 py-2 text-ink border border-line focus:border-accent"
       />
     </label>
   );

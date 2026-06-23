@@ -10,14 +10,14 @@ export default function ManualTradeForm() {
   const [busy, setBusy] = useState(false);
 
   return (
-    <div className="rounded-2xl bg-[var(--surface)] ring-1 ring-[var(--border)]">
+    <div className="rounded-2xl bg-card ring-1 ring-line">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium text-slate-200"
+        className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium text-ink"
       >
         Add a trade manually
-        <span className="text-slate-500">{open ? "−" : "+"}</span>
+        <span className="text-muted">{open ? "−" : "+"}</span>
       </button>
       {open && (
         <form
@@ -27,14 +27,14 @@ export default function ManualTradeForm() {
             setBusy(false);
             setOpen(false);
           }}
-          className="grid grid-cols-2 gap-3 border-t border-[var(--border)] p-4 sm:grid-cols-3"
+          className="grid grid-cols-2 gap-3 border-t border-line p-4 sm:grid-cols-3"
         >
           <Field label="Symbol" name="symbol" required uppercase />
-          <label className="text-xs text-slate-400">
+          <label className="text-xs text-muted">
             Direction
             <select
               name="direction"
-              className="mt-1 block w-full rounded-lg bg-[var(--surface-2)] px-3 py-2 text-slate-100 ring-1 ring-[var(--border)]"
+              className="mt-1 block w-full rounded-lg bg-white border border-line px-3 py-2 text-ink ring-1 ring-line focus:border-accent"
             >
               <option value="long">Long</option>
               <option value="short">Short</option>
@@ -50,7 +50,7 @@ export default function ManualTradeForm() {
             <button
               type="submit"
               disabled={busy}
-              className="rounded-xl bg-indigo-500 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-400 disabled:opacity-60"
+              className="rounded-xl bg-ink px-4 py-2 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60"
             >
               {busy ? "Saving…" : "Add trade"}
             </button>
@@ -77,14 +77,14 @@ function Field({
   uppercase?: boolean;
 }) {
   return (
-    <label className="text-xs text-slate-400">
+    <label className="text-xs text-muted">
       {label}
       <input
         name={name}
         type={type}
         step={step}
         required={required}
-        className={`mt-1 block w-full rounded-lg bg-[var(--surface-2)] px-3 py-2 text-slate-100 ring-1 ring-[var(--border)] ${
+        className={`mt-1 block w-full rounded-lg bg-white border border-line px-3 py-2 text-ink ring-1 ring-line focus:border-accent ${
           uppercase ? "uppercase" : ""
         }`}
       />

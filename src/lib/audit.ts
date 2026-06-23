@@ -4,7 +4,9 @@ interface AuditInput {
   user_id: string;
   entity_type: string;
   entity_id?: string | null;
-  action: "create" | "update" | "delete" | "import";
+  // Phase 1 verbs plus the regulated-engine verbs (propose/approve/reject/fill).
+  // Must stay in sync with the audit_log.action CHECK constraint in migration 03.
+  action: "create" | "update" | "delete" | "import" | "propose" | "approve" | "reject" | "fill";
   before_state?: unknown;
   after_state?: unknown;
 }

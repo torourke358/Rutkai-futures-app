@@ -88,13 +88,13 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-5 pb-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-slate-100">Dashboard</h1>
+        <h1 className="text-lg font-semibold text-ink">Dashboard</h1>
       </div>
 
       {!configured && <FirstRunBanner />}
 
       {trades.length === 0 ? (
-        <div className="rounded-2xl bg-[var(--surface)] p-6 text-center text-sm text-slate-400 ring-1 ring-[var(--border)]">
+        <div className="rounded-2xl bg-card p-6 text-center text-sm text-muted ring-1 ring-line">
           No closed trades yet. Import a NinjaTrader Executions CSV on the
           Import tab to get started.
         </div>
