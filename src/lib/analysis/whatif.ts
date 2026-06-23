@@ -33,16 +33,35 @@ export interface SweepTrade {
   realized_pnl: number | null;
   tick_size: number;
   point_value: number;
+  // Pre-entry ATR (price points), used only when stopMode === "atr" to size the
+  // stop by volatility. Computed by the caller from bars before the entry.
+  atr?: number | null;
 }
 
-export type ExitRule = "stop_target" | "stop_eod" | "eod";
+export type ExitRule =
+  | "stop_target" // stop + target (target = targetR * stop)
+  | "stop_eod" // stop, else exit at session close
+  | "eod" // hold to session close (no stop/target)
+  | "trailing" // trail the stop by the stop distance behind the best price
+  | "breakeven" // stop, move to breakeven after +breakevenR, optional target
+  | "time"; // exit after timeMinutes (stop still applies if set)
+
+export type StopMode = "points" | "atr";
 
 export interface SweepParams {
-  // New fixed stop distance, in price points. Required for stop_* rules.
-  stopPoints: number | null;
-  // New target as an R-multiple of the stop. Used only by stop_target.
-  targetR: number | null;
   exitRule: ExitRule;
+  // How the stop/trail distance is derived. Defaults to "points".
+  stopMode?: StopMode;
+  // Stop/trail distance in price points (stopMode "points").
+  stopPoints: number | null;
+  // Stop/trail distance as a multiple of the trade's pre-entry ATR (stopMode "atr").
+  atrMultiple?: number | null;
+  // Target as an R-multiple of the stop distance (stop_target, breakeven).
+  targetR: number | null;
+  // Breakeven trigger as an R-multiple of the stop distance (breakeven). Default 1.
+  breakevenR?: number | null;
+  // Minutes (1m bars) to hold before a time exit (time).
+  timeMinutes?: number | null;
 }
 
 export type Classification =
@@ -60,9 +79,11 @@ export interface PerTradeResult {
   original_pnl_cents: number;
   new_pnl_cents: number | null; // null when no bars cover the trade
   delta_cents: number; // 0 when no bars
-  new_exit_reason: "target" | "stop" | "eod" | "none";
+  new_exit_reason: ExitReason;
   classification: Classification;
 }
+
+export type ExitReason = "target" | "stop" | "eod" | "time" | "none";
 
 export interface SweepSummary {
   trade_count: number;
@@ -90,6 +111,19 @@ export interface SweepItem {
   bars: SweepBar[];
 }
 
+// The effective stop/trail distance in price points for a trade, honoring
+// stopMode (raw points vs. an ATR multiple). Null when it can't be determined
+// (e.g., ATR mode with no ATR available) — callers then treat the trade as
+// having no stop and fall through to the session close.
+function stopDistanceOf(trade: SweepTrade, params: SweepParams): number | null {
+  if ((params.stopMode ?? "points") === "atr") {
+    const m = params.atrMultiple;
+    if (m != null && m > 0 && trade.atr != null && trade.atr > 0) return m * trade.atr;
+    return null;
+  }
+  return params.stopPoints != null && params.stopPoints > 0 ? params.stopPoints : null;
+}
+
 // Walk a single trade's session bars under the new params and return the
 // counterfactual exit. Stop is assumed to fill before target when one bar spans
 // both (the conservative choice — matches the SimBrokerAdapter).
@@ -97,34 +131,93 @@ function counterfactualExit(
   trade: SweepTrade,
   bars: SweepBar[],
   params: SweepParams,
-): { exitPrice: number; reason: "target" | "stop" | "eod" | "none" } {
+): { exitPrice: number; reason: ExitReason } {
   const clean = bars.filter((b) => b.high != null && b.low != null);
   if (clean.length === 0) return { exitPrice: trade.entry_price, reason: "none" };
 
   const isLong = trade.direction === "long";
-  const useStop = params.exitRule !== "eod" && params.stopPoints != null && params.stopPoints > 0;
-  const useTarget = params.exitRule === "stop_target" && params.targetR != null && useStop;
+  const entry = trade.entry_price;
+  const stopDist = stopDistanceOf(trade, params);
+  const lastClose = () => clean[clean.length - 1].close ?? entry;
+  const rule = params.exitRule;
 
-  const stopDist = params.stopPoints ?? 0;
-  const stopPrice = isLong ? trade.entry_price - stopDist : trade.entry_price + stopDist;
-  const targetDist = stopDist * (params.targetR ?? 0);
-  const targetPrice = isLong ? trade.entry_price + targetDist : trade.entry_price - targetDist;
+  // Hold to session close — no stop, no target.
+  if (rule === "eod") return { exitPrice: lastClose(), reason: "eod" };
 
+  // Trailing stop: ratchet the stop `stopDist` behind the best price reached.
+  if (rule === "trailing") {
+    if (stopDist == null) return { exitPrice: lastClose(), reason: "eod" };
+    let trail = isLong ? entry - stopDist : entry + stopDist;
+    for (const b of clean) {
+      const high = b.high as number;
+      const low = b.low as number;
+      if (isLong ? low <= trail : high >= trail) return { exitPrice: trail, reason: "stop" };
+      trail = isLong ? Math.max(trail, high - stopDist) : Math.min(trail, low + stopDist);
+    }
+    return { exitPrice: lastClose(), reason: "eod" };
+  }
+
+  // Time exit: close after `timeMinutes` bars (a stop, if set, can fire first).
+  if (rule === "time") {
+    const exitIdx = Math.min(
+      params.timeMinutes != null && params.timeMinutes > 0 ? params.timeMinutes : clean.length - 1,
+      clean.length - 1,
+    );
+    const stopPrice = stopDist == null ? null : isLong ? entry - stopDist : entry + stopDist;
+    for (let i = 0; i <= exitIdx; i++) {
+      const b = clean[i];
+      if (stopPrice != null) {
+        const hit = isLong ? (b.low as number) <= stopPrice : (b.high as number) >= stopPrice;
+        if (hit) return { exitPrice: stopPrice, reason: "stop" };
+      }
+      if (i === exitIdx) return { exitPrice: b.close ?? entry, reason: "time" };
+    }
+    return { exitPrice: lastClose(), reason: "time" };
+  }
+
+  // Breakeven: start at the stop; once price is +breakevenR*stop in favor, move
+  // the stop to entry. Optional target at targetR*stop.
+  if (rule === "breakeven") {
+    if (stopDist == null) return { exitPrice: lastClose(), reason: "eod" };
+    let stopPrice = isLong ? entry - stopDist : entry + stopDist;
+    const trigDist = (params.breakevenR ?? 1) * stopDist;
+    const trigger = isLong ? entry + trigDist : entry - trigDist;
+    const targetPrice =
+      params.targetR != null
+        ? isLong
+          ? entry + params.targetR * stopDist
+          : entry - params.targetR * stopDist
+        : null;
+    let movedBE = false;
+    for (const b of clean) {
+      const high = b.high as number;
+      const low = b.low as number;
+      if (isLong ? low <= stopPrice : high >= stopPrice) return { exitPrice: stopPrice, reason: "stop" };
+      if (targetPrice != null && (isLong ? high >= targetPrice : low <= targetPrice))
+        return { exitPrice: targetPrice, reason: "target" };
+      if (!movedBE && (isLong ? high >= trigger : low <= trigger)) {
+        stopPrice = entry;
+        movedBE = true;
+      }
+    }
+    return { exitPrice: lastClose(), reason: "eod" };
+  }
+
+  // stop_target / stop_eod: fixed stop, optional target.
+  const useStop = stopDist != null;
+  const useTarget = rule === "stop_target" && params.targetR != null && useStop;
+  const stopPrice = isLong ? entry - (stopDist ?? 0) : entry + (stopDist ?? 0);
+  const targetDist = (stopDist ?? 0) * (params.targetR ?? 0);
+  const targetPrice = isLong ? entry + targetDist : entry - targetDist;
   for (const b of clean) {
     const high = b.high as number;
     const low = b.low as number;
-    if (useStop) {
-      const stopHit = isLong ? low <= stopPrice : high >= stopPrice;
-      if (stopHit) return { exitPrice: stopPrice, reason: "stop" };
-    }
-    if (useTarget) {
-      const targetHit = isLong ? high >= targetPrice : low <= targetPrice;
-      if (targetHit) return { exitPrice: targetPrice, reason: "target" };
-    }
+    if (useStop && (isLong ? low <= stopPrice : high >= stopPrice))
+      return { exitPrice: stopPrice, reason: "stop" };
+    if (useTarget && (isLong ? high >= targetPrice : low <= targetPrice))
+      return { exitPrice: targetPrice, reason: "target" };
   }
-  // Never hit → exit at the session's last close (end-of-day).
-  const lastClose = clean[clean.length - 1].close ?? trade.entry_price;
-  return { exitPrice: lastClose, reason: "eod" };
+  return { exitPrice: lastClose(), reason: "eod" };
 }
 
 function classify(originalCents: number, newCents: number | null): Classification {

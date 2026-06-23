@@ -80,6 +80,85 @@ test("is bit-for-bit reproducible across two runs", () => {
   assert.deepEqual(r1, r2);
 });
 
+test("trailing stop: ratchets behind the best price and exits on the retrace", () => {
+  const items: SweepItem[] = [
+    {
+      trade: trade("A", -400),
+      bars: [
+        bar("t1", 20010, 19999, 20005),
+        bar("t2", 20020, 20012, 20018),
+        bar("t3", 20016, 20013, 20014), // trail at 20015 → low 20013 hits it
+      ],
+    },
+  ];
+  const r = sweep(items, { stopPoints: 5, targetR: null, exitRule: "trailing" });
+  assert.equal(r.per_trade[0].new_exit_reason, "stop");
+  assert.equal(r.per_trade[0].new_pnl_cents, 30000); // +15pt * $20 = $300
+  assert.equal(r.per_trade[0].classification, "rescued");
+});
+
+test("breakeven: moves the stop to entry after the trigger, exits flat", () => {
+  const items: SweepItem[] = [
+    {
+      trade: trade("A", -400),
+      bars: [
+        bar("t1", 20006, 20001, 20004), // triggers BE (+5), stop -> 20000
+        bar("t2", 20001, 19998, 19999), // hits breakeven stop
+      ],
+    },
+  ];
+  const r = sweep(items, { stopPoints: 5, targetR: null, exitRule: "breakeven", breakevenR: 1 });
+  assert.equal(r.per_trade[0].new_exit_reason, "stop");
+  assert.equal(r.per_trade[0].new_pnl_cents, 0); // exited at entry → flat
+});
+
+test("time exit: closes after N minutes at that bar's close", () => {
+  const items: SweepItem[] = [
+    {
+      trade: trade("A", -400),
+      bars: [
+        bar("t0", 20001, 19999, 20000),
+        bar("t1", 20003, 20000, 20002),
+        bar("t2", 20009, 20005, 20008), // index 2 = exit at close 20008
+      ],
+    },
+  ];
+  const r = sweep(items, { stopPoints: null, targetR: null, exitRule: "time", timeMinutes: 2 });
+  assert.equal(r.per_trade[0].new_exit_reason, "time");
+  assert.equal(r.per_trade[0].new_pnl_cents, 16000); // +8pt * $20 = $160
+});
+
+test("ATR-mode stop: stop distance = atrMultiple * trade.atr", () => {
+  const items: SweepItem[] = [
+    { trade: { ...trade("A", -400), atr: 3 }, bars: [bar("t1", 20001, 19993, 19995)] },
+  ];
+  // 2 * ATR(3) = 6pt stop → 19994; low 19993 hits it
+  const r = sweep(items, {
+    stopPoints: null,
+    targetR: null,
+    exitRule: "stop_eod",
+    stopMode: "atr",
+    atrMultiple: 2,
+  });
+  assert.equal(r.per_trade[0].new_exit_reason, "stop");
+  assert.equal(r.per_trade[0].new_pnl_cents, -12000); // -6pt * $20 = -$120
+});
+
+test("ATR-mode with no ATR available falls back to the session close (no stop)", () => {
+  const items: SweepItem[] = [
+    { trade: trade("A", -400), bars: [bar("t1", 20007, 19990, 20005)] },
+  ];
+  const r = sweep(items, {
+    stopPoints: null,
+    targetR: null,
+    exitRule: "stop_eod",
+    stopMode: "atr",
+    atrMultiple: 2,
+  });
+  assert.equal(r.per_trade[0].new_exit_reason, "eod");
+  assert.equal(r.per_trade[0].new_pnl_cents, 10000); // +5pt * $20 = $100
+});
+
 test("trades with no covering bars are reported, not silently dropped", () => {
   const items: SweepItem[] = [{ trade: trade("A", -400), bars: [] }];
   const r = sweep(items, { stopPoints: 30, targetR: 2, exitRule: "stop_target" });

@@ -6,7 +6,7 @@ import {
   suggestParams,
   type SweepActionResult,
 } from "@/app/(app)/whatif/actions";
-import type { SweepParams, ExitRule } from "@/lib/analysis/whatif";
+import type { SweepParams, ExitRule, StopMode } from "@/lib/analysis/whatif";
 import { formatSignedUsd } from "@/lib/format";
 import Disclaimer from "@/components/Disclaimer";
 
@@ -15,9 +15,13 @@ const field =
 
 export default function WhatIfPanel({ symbols }: { symbols: string[] }) {
   const [symbol, setSymbol] = useState(symbols[0] ?? "all");
-  const [stopPoints, setStopPoints] = useState<string>("30");
-  const [targetR, setTargetR] = useState<string>("2");
   const [exitRule, setExitRule] = useState<ExitRule>("stop_target");
+  const [stopMode, setStopMode] = useState<StopMode>("points");
+  const [stopPoints, setStopPoints] = useState<string>("30");
+  const [atrMultiple, setAtrMultiple] = useState<string>("2");
+  const [targetR, setTargetR] = useState<string>("2");
+  const [breakevenR, setBreakevenR] = useState<string>("1");
+  const [timeMinutes, setTimeMinutes] = useState<string>("15");
   const [question, setQuestion] = useState("");
   const [pending, startTransition] = useTransition();
   const [mapping, startMapping] = useTransition();
@@ -25,9 +29,13 @@ export default function WhatIfPanel({ symbols }: { symbols: string[] }) {
   const [error, setError] = useState<string | null>(null);
 
   function applyParams(p: SweepParams) {
-    if (p.stopPoints != null) setStopPoints(String(p.stopPoints));
-    if (p.targetR != null) setTargetR(String(p.targetR));
     setExitRule(p.exitRule);
+    if (p.stopMode) setStopMode(p.stopMode);
+    if (p.stopPoints != null) setStopPoints(String(p.stopPoints));
+    if (p.atrMultiple != null) setAtrMultiple(String(p.atrMultiple));
+    if (p.targetR != null) setTargetR(String(p.targetR));
+    if (p.breakevenR != null) setBreakevenR(String(p.breakevenR));
+    if (p.timeMinutes != null) setTimeMinutes(String(p.timeMinutes));
   }
 
   function onSuggest() {
@@ -42,10 +50,15 @@ export default function WhatIfPanel({ symbols }: { symbols: string[] }) {
   function onRun() {
     setError(null);
     setResult(null);
+    const numOr = (s: string) => (s.trim() === "" ? null : Number(s));
     const params: SweepParams = {
-      stopPoints: stopPoints.trim() === "" ? null : Number(stopPoints),
-      targetR: targetR.trim() === "" ? null : Number(targetR),
       exitRule,
+      stopMode,
+      stopPoints: stopMode === "points" ? numOr(stopPoints) : null,
+      atrMultiple: stopMode === "atr" ? numOr(atrMultiple) : null,
+      targetR: exitRule === "stop_target" || exitRule === "breakeven" ? numOr(targetR) : null,
+      breakevenR: exitRule === "breakeven" ? numOr(breakevenR) : null,
+      timeMinutes: exitRule === "time" ? numOr(timeMinutes) : null,
     };
     startTransition(async () => {
       const res = await runSweep(symbol, params, question.trim() || undefined);
@@ -85,7 +98,7 @@ export default function WhatIfPanel({ symbols }: { symbols: string[] }) {
 
       {/* deterministic controls */}
       <div className="rounded-2xl border border-line bg-card p-4 shadow-sm">
-        <div className="grid gap-3 sm:grid-cols-4">
+        <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-4">
           <label className="text-xs font-medium text-muted">
             Instrument
             <select value={symbol} onChange={(e) => setSymbol(e.target.value)} className={field}>
@@ -105,33 +118,91 @@ export default function WhatIfPanel({ symbols }: { symbols: string[] }) {
               className={field}
             >
               <option value="stop_target">Stop + target</option>
-              <option value="stop_eod">Stop, else session close</option>
-              <option value="eod">Hold to session close</option>
+              <option value="stop_eod">Stop, else close</option>
+              <option value="eod">Hold to close</option>
+              <option value="trailing">Trailing stop</option>
+              <option value="breakeven">Breakeven stop</option>
+              <option value="time">Time exit</option>
             </select>
           </label>
-          <label className="text-xs font-medium text-muted">
-            Stop distance (pts)
-            <input
-              type="number"
-              step="any"
-              value={stopPoints}
-              onChange={(e) => setStopPoints(e.target.value)}
-              disabled={exitRule === "eod"}
-              className={`${field} font-mono tabular-nums disabled:opacity-50`}
-            />
-          </label>
-          <label className="text-xs font-medium text-muted">
-            Target (R)
-            <input
-              type="number"
-              step="any"
-              value={targetR}
-              onChange={(e) => setTargetR(e.target.value)}
-              disabled={exitRule !== "stop_target"}
-              className={`${field} font-mono tabular-nums disabled:opacity-50`}
-            />
-          </label>
+
+          {exitRule !== "eod" && (
+            <>
+              <label className="text-xs font-medium text-muted">
+                Stop sizing
+                <select
+                  value={stopMode}
+                  onChange={(e) => setStopMode(e.target.value as StopMode)}
+                  className={field}
+                >
+                  <option value="points">Points</option>
+                  <option value="atr">ATR multiple</option>
+                </select>
+              </label>
+              <label className="text-xs font-medium text-muted">
+                {(exitRule === "trailing" ? "Trail" : "Stop") +
+                  (stopMode === "atr" ? " (× ATR)" : " (pts)")}
+                <input
+                  type="number"
+                  step="any"
+                  value={stopMode === "atr" ? atrMultiple : stopPoints}
+                  onChange={(e) =>
+                    stopMode === "atr"
+                      ? setAtrMultiple(e.target.value)
+                      : setStopPoints(e.target.value)
+                  }
+                  className={`${field} font-mono tabular-nums`}
+                />
+              </label>
+            </>
+          )}
+
+          {(exitRule === "stop_target" || exitRule === "breakeven") && (
+            <label className="text-xs font-medium text-muted">
+              Target (R)
+              <input
+                type="number"
+                step="any"
+                value={targetR}
+                onChange={(e) => setTargetR(e.target.value)}
+                className={`${field} font-mono tabular-nums`}
+              />
+            </label>
+          )}
+
+          {exitRule === "breakeven" && (
+            <label className="text-xs font-medium text-muted">
+              Breakeven trigger (R)
+              <input
+                type="number"
+                step="any"
+                value={breakevenR}
+                onChange={(e) => setBreakevenR(e.target.value)}
+                className={`${field} font-mono tabular-nums`}
+              />
+            </label>
+          )}
+
+          {exitRule === "time" && (
+            <label className="text-xs font-medium text-muted">
+              Hold (minutes)
+              <input
+                type="number"
+                step="1"
+                value={timeMinutes}
+                onChange={(e) => setTimeMinutes(e.target.value)}
+                className={`${field} font-mono tabular-nums`}
+              />
+            </label>
+          )}
         </div>
+
+        {stopMode === "atr" && symbol === "all" && (
+          <p className="mt-2 text-[11px] text-muted">
+            ATR sizing makes an &ldquo;All&rdquo; sweep apples-to-apples across instruments.
+          </p>
+        )}
+
         <div className="mt-3 flex items-center gap-3">
           <button
             type="button"

@@ -8,6 +8,7 @@ import { sweep, type SweepItem, type SweepParams, type SweepBar } from "@/lib/an
 import { mapQuestionToParams } from "@/lib/ai/params";
 import { narrateSweep } from "@/lib/ai/narrate";
 import { centsToDollars } from "@/lib/money";
+import { atr } from "@/lib/engine/riskTemplate";
 
 async function requireUser() {
   const supabase = await createClient();
@@ -80,8 +81,21 @@ export async function runSweep(
   const { supabase, user } = await requireUser();
   if (!user) return { ok: false, reason: "Not authenticated." };
 
-  if (params.exitRule !== "eod" && (params.stopPoints == null || params.stopPoints <= 0)) {
-    return { ok: false, reason: "Set a stop distance (points) for a stop-based exit rule." };
+  const atrMode = params.stopMode === "atr";
+  const needsStop = ["stop_target", "stop_eod", "trailing", "breakeven"].includes(params.exitRule);
+  const hasStopSpec = atrMode
+    ? params.atrMultiple != null && params.atrMultiple > 0
+    : params.stopPoints != null && params.stopPoints > 0;
+  if (needsStop && !hasStopSpec) {
+    return {
+      ok: false,
+      reason: atrMode
+        ? "Set an ATR multiple for this exit rule."
+        : `Set a ${params.exitRule === "trailing" ? "trail" : "stop"} distance (points) for this exit rule.`,
+    };
+  }
+  if (params.exitRule === "time" && !(params.timeMinutes != null && params.timeMinutes > 0)) {
+    return { ok: false, reason: "Set a hold time (minutes) for the time exit." };
   }
 
   // Closed trades (optionally just one instrument), plus the user's instruments.
@@ -128,7 +142,8 @@ export async function runSweep(
       });
       continue;
     }
-    const bars = await loadSessionBars(supabase, inst.id, t.entry_at);
+    const { pre, post } = await loadTradeBars(supabase, inst.id, t.entry_at, atrMode);
+    const tradeAtr = atrMode ? atr(pre, 14) : null;
     items.push({
       trade: {
         id: t.id,
@@ -139,8 +154,9 @@ export async function runSweep(
         realized_pnl: t.realized_pnl,
         tick_size: inst.tick_size,
         point_value: inst.point_value,
+        atr: tradeAtr,
       },
-      bars,
+      bars: post,
     });
   }
 
@@ -215,21 +231,38 @@ export async function runSweep(
 
 type DbClient = Awaited<ReturnType<typeof createClient>>;
 
-async function loadSessionBars(
+const ATR_LOOKBACK_MIN = 30; // ~30 bars before entry, enough for ATR(14)
+
+// Load bars around a trade: `post` = entry → session end (the sweep window);
+// `pre` = a short lookback BEFORE entry (only when withLookback), used to size
+// an ATR-based stop. One query per trade.
+async function loadTradeBars(
   supabase: DbClient,
   instrumentId: string,
   entryIso: string,
-): Promise<SweepBar[]> {
-  const end = new Date(Date.parse(entryIso) + SESSION_HOURS * 3600 * 1000).toISOString();
+  withLookback: boolean,
+): Promise<{ pre: SweepBar[]; post: SweepBar[] }> {
+  const entryMs = Date.parse(entryIso);
+  const start = withLookback
+    ? new Date(entryMs - ATR_LOOKBACK_MIN * 60000).toISOString()
+    : entryIso;
+  const end = new Date(entryMs + SESSION_HOURS * 3600 * 1000).toISOString();
   const { data } = await supabase
     .from("bars")
     .select("ts, open, high, low, close")
     .eq("instrument_id", instrumentId)
     .eq("timeframe", "1m")
-    .gte("ts", entryIso)
+    .gte("ts", start)
     .lte("ts", end)
     .order("ts", { ascending: true })
-    .limit(600)
+    .limit(900)
     .returns<SweepBar[]>();
-  return data ?? [];
+  const rows = data ?? [];
+  const pre: SweepBar[] = [];
+  const post: SweepBar[] = [];
+  for (const b of rows) {
+    if (Date.parse(b.ts) < entryMs) pre.push(b);
+    else post.push(b);
+  }
+  return { pre, post };
 }

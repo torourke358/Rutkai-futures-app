@@ -11,9 +11,13 @@ import type { SweepParams } from "@/lib/analysis/whatif";
 // reachable to produce sane params.
 
 export const ParamSchema = z.object({
-  stopPoints: z.number().positive().max(2000).nullable(),
+  exitRule: z.enum(["stop_target", "stop_eod", "eod", "trailing", "breakeven", "time"]),
+  stopMode: z.enum(["points", "atr"]).optional(),
+  stopPoints: z.number().positive().max(5000).nullable(),
+  atrMultiple: z.number().positive().max(20).nullable().optional(),
   targetR: z.number().positive().max(50).nullable(),
-  exitRule: z.enum(["stop_target", "stop_eod", "eod"]),
+  breakevenR: z.number().positive().max(20).nullable().optional(),
+  timeMinutes: z.number().positive().max(1440).nullable().optional(),
 });
 
 function extractJson(text: string): unknown {
