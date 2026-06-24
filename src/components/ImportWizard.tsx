@@ -2,10 +2,12 @@
 
 import { useCallback, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import Papa from "papaparse";
 import {
   CsvImportSource,
   NT8_DEFAULT_MAPPING,
 } from "@/lib/import/CsvImportSource";
+import { detectExecutionMapping } from "@/lib/import/detect";
 import type {
   CsvColumnMapping,
   ImportResult,
@@ -47,6 +49,7 @@ export default function ImportWizard({
   >("idle");
   const [error, setError] = useState<string | null>(null);
   const [summary, setSummary] = useState<ImportSummary | null>(null);
+  const [detectedBroker, setDetectedBroker] = useState<string | null>(null);
 
   const parse = useCallback(async (csv: string, map: CsvColumnMapping) => {
     setPhase("parsing");
@@ -66,10 +69,18 @@ export default function ImportWizard({
 
   async function onFile(file: File) {
     const csv = await file.text();
+    // Auto-detect the broker format from the header row so almost any fills
+    // export maps itself; fall back to the saved/NT8 mapping if unsure.
+    const fields = (Papa.parse(csv, { header: true, preview: 1, skipEmptyLines: true }).meta
+      .fields ?? []) as string[];
+    const det = detectExecutionMapping(fields);
+    const useMap = det.complete ? det.mapping : savedMapping ?? NT8_DEFAULT_MAPPING;
+    setMapping(useMap);
+    setDetectedBroker(det.complete ? det.broker : null);
     setFileName(file.name);
     setText(csv);
     setSummary(null);
-    await parse(csv, mapping);
+    await parse(csv, useMap);
   }
 
   function updateMapping(key: keyof CsvColumnMapping, value: string) {
@@ -143,11 +154,13 @@ export default function ImportWizard({
           {fileName ? (
             <span className="font-medium text-ink">{fileName}</span>
           ) : (
-            "Drag a NinjaTrader 8 Executions CSV here, or click to choose"
+            "Drag any broker's trades/executions CSV here, or click to choose"
           )}
         </p>
         <p className="mt-1 text-xs text-muted">
-          {fileName ? "Click to choose a different file" : ".csv exported from the Trade Performance window"}
+          {fileName
+            ? "Click to choose a different file"
+            : "NinjaTrader, Tradovate, or a generic fills export — we auto-detect the columns"}
         </p>
         <input
           ref={fileInput}
@@ -170,7 +183,18 @@ export default function ImportWizard({
       {/* Column mapping */}
       {result && phase !== "done" && (
         <section className="rounded-2xl bg-card p-4 border border-line shadow-sm space-y-3">
-          <h2 className="text-sm font-semibold text-ink">Column mapping</h2>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-sm font-semibold text-ink">Column mapping</h2>
+            {detectedBroker ? (
+              <span className="rounded-full bg-accent/10 px-2 py-0.5 text-[11px] font-medium text-accent">
+                Auto-detected: {detectedBroker} — edit only if something looks off
+              </span>
+            ) : (
+              <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[11px] text-muted">
+                Format not recognized — set the columns below
+              </span>
+            )}
+          </div>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {FIELDS.map((f) => (
               <label key={f.key} className="block text-xs text-muted">

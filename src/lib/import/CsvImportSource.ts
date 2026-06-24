@@ -1,4 +1,5 @@
 import Papa from "papaparse";
+import { parseSide } from "@/lib/import/detect";
 import type {
   CsvColumnMapping,
   ImportInput,
@@ -49,8 +50,7 @@ export class CsvImportSource implements ImportSource {
         errors.push({ rowNumber, reason: "empty symbol", raw: row });
         return;
       }
-      const side: "buy" | "sell" | null =
-        sideRaw.startsWith("buy") ? "buy" : sideRaw.startsWith("sell") ? "sell" : null;
+      const side = parseSide(sideRaw);
       if (!side) {
         errors.push({ rowNumber, reason: `unknown side "${sideRaw}"`, raw: row });
         return;
