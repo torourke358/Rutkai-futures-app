@@ -8,21 +8,29 @@ import {
   type DrawdownType,
 } from "@/lib/analysis/propRules";
 import { formatSignedUsd, formatUsd } from "@/lib/format";
+import { PROP_FIRMS, PROP_FIRMS_AS_OF } from "@/lib/analysis/propFirms";
 
 const field =
   "mt-1 block w-full rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink focus:border-accent font-mono tabular-nums";
-
-// Example rule sets — illustrative only; confirm the real numbers with your firm.
-const PRESETS: Record<string, PropRules> = {
-  "50K eval (example)": { startingBalance: 50000, dailyLossLimit: 1000, maxDrawdown: 2000, drawdownType: "trailing", consistencyPct: 50, maxContracts: 5, minTradingDays: 5 },
-  "100K eval (example)": { startingBalance: 100000, dailyLossLimit: 2000, maxDrawdown: 3000, drawdownType: "trailing", consistencyPct: 50, maxContracts: 10, minTradingDays: 5 },
-  "150K eval (example)": { startingBalance: 150000, dailyLossLimit: 3000, maxDrawdown: 4500, drawdownType: "trailing", consistencyPct: 50, maxContracts: 15, minTradingDays: 5 },
-};
+const sel =
+  "mt-1 block w-full rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink focus:border-accent";
 
 export default function PropRulesPanel({ trades }: { trades: PropTrade[] }) {
-  const [rules, setRules] = useState<PropRules>(PRESETS["50K eval (example)"]);
+  const [firmIdx, setFirmIdx] = useState(0);
+  const [accountIdx, setAccountIdx] = useState(1); // default Apex 50K
+  const [rules, setRules] = useState<PropRules>(PROP_FIRMS[0].accounts[1].rules);
   const set = <K extends keyof PropRules>(k: K, v: PropRules[K]) =>
     setRules((r) => ({ ...r, [k]: v }));
+
+  function selectFirm(i: number) {
+    setFirmIdx(i);
+    setAccountIdx(0);
+    setRules(PROP_FIRMS[i].accounts[0].rules);
+  }
+  function selectAccount(j: number) {
+    setAccountIdx(j);
+    setRules(PROP_FIRMS[firmIdx].accounts[j].rules);
+  }
 
   const res = useMemo(() => computePropRules(trades, rules), [trades, rules]);
 
@@ -30,23 +38,35 @@ export default function PropRulesPanel({ trades }: { trades: PropTrade[] }) {
     <div className="space-y-4">
       {/* rule inputs */}
       <div className="rounded-2xl border border-line bg-card p-4 shadow-sm">
-        <div className="mb-3 flex flex-wrap items-end gap-3">
+        <div className="mb-3 grid gap-3 sm:grid-cols-2">
           <label className="text-xs font-medium text-muted">
-            Preset
-            <select
-              onChange={(e) => e.target.value && setRules(PRESETS[e.target.value])}
-              defaultValue="50K eval (example)"
-              className="mt-1 block rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink focus:border-accent"
-            >
-              {Object.keys(PRESETS).map((k) => (
-                <option key={k} value={k}>
-                  {k}
+            Prop firm
+            <select value={firmIdx} onChange={(e) => selectFirm(Number(e.target.value))} className={sel}>
+              {PROP_FIRMS.map((f, i) => (
+                <option key={f.name} value={i}>
+                  {f.name}
                 </option>
               ))}
             </select>
           </label>
-          <span className="text-[11px] text-muted">Presets are examples — set your firm&apos;s real numbers below.</span>
+          <label className="text-xs font-medium text-muted">
+            Account
+            <select value={accountIdx} onChange={(e) => selectAccount(Number(e.target.value))} className={sel}>
+              {PROP_FIRMS[firmIdx].accounts.map((a, j) => (
+                <option key={a.label} value={j}>
+                  {a.label}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
+        <p className="mb-3 rounded-lg border border-line bg-surface px-3 py-2 text-[11px] text-muted">
+          {PROP_FIRMS[firmIdx].note}{" "}
+          <span className="text-ink">
+            Rules as of {PROP_FIRMS_AS_OF} — confirm the live numbers with your firm; they change and
+            vary by plan. You can edit any field below.
+          </span>
+        </p>
 
         <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-4">
           <Num label="Starting balance ($)" value={rules.startingBalance} onChange={(v) => set("startingBalance", v ?? 50000)} />
