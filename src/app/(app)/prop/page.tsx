@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { requireFeature } from "@/lib/billing/plan";
 import PropRulesPanel from "@/components/PropRulesPanel";
 import type { PropTrade } from "@/lib/analysis/propRules";
 
@@ -11,6 +12,7 @@ interface Row {
 }
 
 export default async function PropPage() {
+  await requireFeature("prop_rules");
   const supabase = await createClient();
   const {
     data: { user },

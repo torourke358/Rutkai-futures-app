@@ -1,9 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
+import { requireFeature } from "@/lib/billing/plan";
 import WhatIfPanel from "@/components/WhatIfPanel";
 
 export const dynamic = "force-dynamic";
 
 export default async function WhatIfPage() {
+  await requireFeature("whatif");
   const supabase = await createClient();
   const {
     data: { user },

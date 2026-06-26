@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { requireFeature } from "@/lib/billing/plan";
 import { getStrategy } from "@/lib/engine/registry";
 import { formatSignedUsd, formatUsd } from "@/lib/format";
 import GenerateControls from "@/components/GenerateControls";
@@ -50,6 +51,7 @@ function startOfTodayIso(): string {
 }
 
 export default async function EnginePage() {
+  await requireFeature("engine");
   const supabase = await createClient();
   const {
     data: { user },

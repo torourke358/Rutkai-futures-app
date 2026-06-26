@@ -4,20 +4,21 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { hasFeature, type Feature, type Tier } from "@/lib/billing/tiers";
 
-const TABS = [
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/trades", label: "Trades" },
-  { href: "/import", label: "Import" },
-  { href: "/engine", label: "Engine" },
-  { href: "/strategy", label: "Strategy" },
-  { href: "/paper", label: "Paper" },
-  { href: "/whatif", label: "What-if" },
-  { href: "/prop", label: "Prop" },
-  { href: "/review", label: "Review" },
+const TABS: { href: string; label: string; feature: Feature }[] = [
+  { href: "/dashboard", label: "Dashboard", feature: "journal" },
+  { href: "/trades", label: "Trades", feature: "journal" },
+  { href: "/import", label: "Import", feature: "journal" },
+  { href: "/engine", label: "Engine", feature: "engine" },
+  { href: "/strategy", label: "Strategy", feature: "engine" },
+  { href: "/paper", label: "Paper", feature: "engine" },
+  { href: "/whatif", label: "What-if", feature: "whatif" },
+  { href: "/prop", label: "Prop", feature: "prop_rules" },
+  { href: "/review", label: "Review", feature: "ai_review" },
 ];
 
-export default function NavLinks({ role }: { role: "trader" | "admin" }) {
+export default function NavLinks({ role, tier }: { role: "trader" | "admin"; tier: Tier }) {
   const pathname = usePathname() ?? "/";
   const [signingOut, setSigningOut] = useState(false);
 
@@ -38,11 +39,26 @@ export default function NavLinks({ role }: { role: "trader" | "admin" }) {
 
   return (
     <nav className="flex flex-wrap items-center gap-1 text-sm font-medium">
-      {TABS.map((t) => (
-        <Link key={t.href} href={t.href} className={tabClass(isActive(t.href))}>
-          {t.label}
-        </Link>
-      ))}
+      {TABS.map((t) => {
+        const locked = !hasFeature(tier, t.feature);
+        if (locked) {
+          return (
+            <Link
+              key={t.href}
+              href="/upgrade"
+              title={`${t.label} is a paid feature — upgrade to unlock`}
+              className="rounded-lg px-2.5 py-1 text-muted/60 hover:text-ink"
+            >
+              {t.label} <span aria-hidden>🔒</span>
+            </Link>
+          );
+        }
+        return (
+          <Link key={t.href} href={t.href} className={tabClass(isActive(t.href))}>
+            {t.label}
+          </Link>
+        );
+      })}
       {role === "admin" && (
         <Link href="/admin/audit" className={tabClass(isActive("/admin/audit"))}>
           Audit

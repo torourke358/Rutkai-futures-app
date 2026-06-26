@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getUserRole } from "@/lib/auth";
+import { getUserTier } from "@/lib/billing/plan";
 import NavLinks from "@/components/NavLinks";
 
 // Protected shell. Proxy redirects unauthenticated traffic; this guards
@@ -17,6 +18,7 @@ export default async function AppLayout({
   if (!user) redirect("/login");
 
   const role = (await getUserRole()) ?? "trader";
+  const tier = await getUserTier();
 
   return (
     <div className="flex min-h-dvh flex-col">
@@ -28,7 +30,7 @@ export default async function AppLayout({
             </div>
             Thor
           </div>
-          <NavLinks role={role} />
+          <NavLinks role={role} tier={tier} />
         </div>
       </header>
 

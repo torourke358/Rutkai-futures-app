@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { requireFeature } from "@/lib/billing/plan";
 import { listStrategies } from "@/lib/engine/registry";
 import StrategyConfigForm, {
   type StrategyConfigValues,
@@ -23,6 +24,7 @@ const DEFAULTS: StrategyConfigValues = {
 };
 
 export default async function StrategyPage() {
+  await requireFeature("engine");
   const supabase = await createClient();
   const {
     data: { user },

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { requireFeature } from "@/lib/billing/plan";
 import { formatDateTime, formatSignedUsd, pnlToneClass } from "@/lib/format";
 import Disclaimer from "@/components/Disclaimer";
 
@@ -25,6 +26,7 @@ function symbolOf(r: PaperRow): string {
 }
 
 export default async function PaperPage() {
+  await requireFeature("engine");
   const supabase = await createClient();
   const {
     data: { user },
