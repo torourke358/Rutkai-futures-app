@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { requireFeature } from "@/lib/billing/plan";
 import WhatIfPanel from "@/components/WhatIfPanel";
+import SubTabs from "@/components/SubTabs";
+import { ANALYSIS_SUBTABS } from "@/lib/nav";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +24,9 @@ export default async function WhatIfPage() {
 
   return (
     <div className="space-y-4 pb-8">
-      <h1 className="font-display text-lg font-semibold text-ink">What-if sweep</h1>
+      <h1 className="font-display text-lg font-semibold text-ink">Analysis</h1>
+      <SubTabs tabs={ANALYSIS_SUBTABS} />
+      <h2 className="font-display text-sm font-semibold text-ink">What-if sweep</h2>
       <p className="text-sm text-muted">
         Re-run your own past trades under a different parameter to see what your
         history would have realized. This is a retrospective recomputation of

@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { requireFeature } from "@/lib/billing/plan";
 import { formatDateTime, formatSignedUsd, pnlToneClass } from "@/lib/format";
 import Disclaimer from "@/components/Disclaimer";
+import SubTabs from "@/components/SubTabs";
+import { ENGINE_SUBTABS } from "@/lib/nav";
 
 export const dynamic = "force-dynamic";
 
@@ -49,12 +51,9 @@ export default async function PaperPage() {
 
   return (
     <div className="space-y-4 pb-8">
-      <div className="flex items-center justify-between">
-        <h1 className="font-display text-lg font-semibold text-ink">Paper trades</h1>
-        <Link href="/engine" className="text-sm text-muted hover:text-ink">
-          Engine →
-        </Link>
-      </div>
+      <h1 className="font-display text-lg font-semibold text-ink">Recommendations</h1>
+      <SubTabs tabs={ENGINE_SUBTABS} />
+      <h2 className="font-display text-sm font-semibold text-ink">Paper trades</h2>
 
       <Disclaimer />
 
@@ -62,13 +61,13 @@ export default async function PaperPage() {
         <div className="rounded-2xl border border-dashed border-line bg-card px-4 py-8 text-center">
           <p className="text-sm text-ink">No simulated trades yet.</p>
           <p className="mt-1 text-sm text-muted">
-            Approve a candidate in the engine to record one here.
+            Approve a candidate under Generate to record one here.
           </p>
           <Link
             href="/engine"
             className="mt-3 inline-block rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent-strong"
           >
-            Go to engine
+            Generate a recommendation
           </Link>
         </div>
       ) : (

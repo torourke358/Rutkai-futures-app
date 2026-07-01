@@ -4,6 +4,8 @@ import { listStrategies } from "@/lib/engine/registry";
 import StrategyConfigForm, {
   type StrategyConfigValues,
 } from "@/components/StrategyConfigForm";
+import SubTabs from "@/components/SubTabs";
+import { ENGINE_SUBTABS } from "@/lib/nav";
 
 export const dynamic = "force-dynamic";
 
@@ -47,7 +49,9 @@ export default async function StrategyPage() {
 
   return (
     <div className="space-y-4 pb-8">
-      <h1 className="font-display text-lg font-semibold text-ink">Strategy settings</h1>
+      <h1 className="font-display text-lg font-semibold text-ink">Recommendations</h1>
+      <SubTabs tabs={ENGINE_SUBTABS} />
+      <h2 className="font-display text-sm font-semibold text-ink">Strategy settings</h2>
       <StrategyConfigForm config={config ?? DEFAULTS} plugins={plugins} />
     </div>
   );

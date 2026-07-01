@@ -23,7 +23,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Thor — Futures Journal & Engine",
+  title: "Thor — Futures Journal & Recommendations",
   description:
     "Trade-journal, analytics, and a paper-only, human-gated futures recommendation engine.",
   manifest: "/manifest.json",

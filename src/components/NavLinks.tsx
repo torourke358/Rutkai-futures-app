@@ -4,19 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { hasFeature, type Feature, type Tier } from "@/lib/billing/tiers";
-
-const TABS: { href: string; label: string; feature: Feature }[] = [
-  { href: "/dashboard", label: "Dashboard", feature: "journal" },
-  { href: "/trades", label: "Trades", feature: "journal" },
-  { href: "/import", label: "Import", feature: "journal" },
-  { href: "/engine", label: "Engine", feature: "engine" },
-  { href: "/strategy", label: "Strategy", feature: "engine" },
-  { href: "/paper", label: "Paper", feature: "engine" },
-  { href: "/whatif", label: "What-if", feature: "whatif" },
-  { href: "/prop", label: "Prop", feature: "prop_rules" },
-  { href: "/review", label: "Review", feature: "ai_review" },
-];
+import { hasFeature, type Tier } from "@/lib/billing/tiers";
+import { PRIMARY_TABS } from "@/lib/nav";
 
 export default function NavLinks({ role, tier }: { role: "trader" | "admin"; tier: Tier }) {
   const pathname = usePathname() ?? "/";
@@ -24,6 +13,10 @@ export default function NavLinks({ role, tier }: { role: "trader" | "admin"; tie
 
   function isActive(href: string) {
     return pathname === href || pathname.startsWith(href + "/");
+  }
+  // A grouped primary tab lights up for any of its member routes.
+  function isActiveGroup(prefixes: string[]) {
+    return prefixes.some((p) => isActive(p));
   }
   const tabClass = (active: boolean) =>
     active
@@ -39,7 +32,7 @@ export default function NavLinks({ role, tier }: { role: "trader" | "admin"; tie
 
   return (
     <nav className="flex flex-wrap items-center gap-1 text-sm font-medium">
-      {TABS.map((t) => {
+      {PRIMARY_TABS.map((t) => {
         const locked = !hasFeature(tier, t.feature);
         if (locked) {
           return (
@@ -54,7 +47,7 @@ export default function NavLinks({ role, tier }: { role: "trader" | "admin"; tie
           );
         }
         return (
-          <Link key={t.href} href={t.href} className={tabClass(isActive(t.href))}>
+          <Link key={t.href} href={t.href} className={tabClass(isActiveGroup(t.match))}>
             {t.label}
           </Link>
         );

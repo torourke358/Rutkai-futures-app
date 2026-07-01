@@ -5,6 +5,8 @@ import { getStrategy } from "@/lib/engine/registry";
 import { formatSignedUsd, formatUsd } from "@/lib/format";
 import GenerateControls from "@/components/GenerateControls";
 import TradeTicket, { type TicketCandidate } from "@/components/TradeTicket";
+import SubTabs from "@/components/SubTabs";
+import { ENGINE_SUBTABS } from "@/lib/nav";
 
 export const dynamic = "force-dynamic";
 
@@ -124,12 +126,8 @@ export default async function EnginePage() {
 
   return (
     <div className="space-y-4 pb-8">
-      <div className="flex items-center justify-between">
-        <h1 className="font-display text-lg font-semibold text-ink">Engine</h1>
-        <Link href="/strategy" className="text-sm text-muted hover:text-ink">
-          Strategy settings →
-        </Link>
-      </div>
+      <h1 className="font-display text-lg font-semibold text-ink">Recommendations</h1>
+      <SubTabs tabs={ENGINE_SUBTABS} />
 
       {!config ? (
         <EmptyState />

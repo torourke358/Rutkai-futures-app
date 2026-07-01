@@ -2,6 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { requireFeature } from "@/lib/billing/plan";
 import PropRulesPanel from "@/components/PropRulesPanel";
 import type { PropTrade } from "@/lib/analysis/propRules";
+import SubTabs from "@/components/SubTabs";
+import { ANALYSIS_SUBTABS } from "@/lib/nav";
 
 export const dynamic = "force-dynamic";
 
@@ -37,7 +39,9 @@ export default async function PropPage() {
 
   return (
     <div className="space-y-4 pb-8">
-      <h1 className="font-display text-lg font-semibold text-ink">Prop-firm rules</h1>
+      <h1 className="font-display text-lg font-semibold text-ink">Analysis</h1>
+      <SubTabs tabs={ANALYSIS_SUBTABS} />
+      <h2 className="font-display text-sm font-semibold text-ink">Prop-firm rules</h2>
       <p className="text-sm text-muted">
         Enter your firm&apos;s rules and see where your own history <em>would</em> have breached
         them — the day a daily-loss or drawdown limit would have failed the account, consistency
