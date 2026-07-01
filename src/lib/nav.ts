@@ -36,7 +36,7 @@ export interface SubTab {
 export const ENGINE_SUBTABS: SubTab[] = [
   { href: "/engine", label: "Generate" },
   { href: "/strategy", label: "Strategy" },
-  { href: "/paper", label: "Paper" },
+  { href: "/paper", label: "Simulations" },
 ];
 
 // Sub-tabs for the "Analysis" group.

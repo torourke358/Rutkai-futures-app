@@ -53,7 +53,7 @@ export default async function PaperPage() {
     <div className="space-y-4 pb-8">
       <h1 className="font-display text-lg font-semibold text-ink">Recommendations</h1>
       <SubTabs tabs={ENGINE_SUBTABS} />
-      <h2 className="font-display text-sm font-semibold text-ink">Paper trades</h2>
+      <h2 className="font-display text-sm font-semibold text-ink">Simulations</h2>
 
       <Disclaimer />
 
